@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -8,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/olexsmir/viye/internal/viye"
 )
@@ -22,9 +24,17 @@ func (Tool) Match(ctx *viye.Context) bool {
 func (Tool) Execute(ctx *viye.Context) (string, error) {
 	switch {
 	case isCmd(ctx):
-		cmd := exec.Command("sh", "-c", strings.Join(ctx.Args, " "))
+		ctxTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		cmd := exec.CommandContext(ctxTimeout, "sh", "-c", strings.Join(ctx.Args, " "))
 		cmd.Dir = ctx.Dir
-		out, _ := cmd.CombinedOutput()
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			if ctxTimeout.Err() == context.DeadlineExceeded {
+				return "", fmt.Errorf("timeout: command exceeded 5s")
+			}
+		}
 		return viye.Indent(string(out)), nil
 
 	case isBGCmd(ctx):
