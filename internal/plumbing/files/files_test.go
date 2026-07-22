@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/olexsmir/viye/core"
+	"github.com/olexsmir/viye/internal/viye"
 )
 
 func TestMatch(t *testing.T) {
@@ -27,7 +27,7 @@ func TestMatch(t *testing.T) {
 		{"$ ls", dir, false},
 	}
 	for _, tt := range tests {
-		got := (&Tool{}).Match(&core.Context{Path: []string{tt.p}, Dir: tt.dir})
+		got := (&Tool{}).Match(&viye.Context{Path: []string{tt.p}, Dir: tt.dir})
 		if got != tt.m {
 			t.Errorf("Match(%q, dir=%q) = %v; want %v", tt.p, tt.dir, got, tt.m)
 		}
@@ -38,7 +38,7 @@ func TestExecute(t *testing.T) {
 	t.Run("list dir", func(t *testing.T) {
 		dir := t.TempDir()
 		os.WriteFile(filepath.Join(dir, "x"), nil, 0o644)
-		ctx := &core.Context{Path: []string{dir}, Dir: "."}
+		ctx := &viye.Context{Path: []string{dir}, Dir: "."}
 		got, err := (&Tool{}).Execute(ctx)
 		if err != nil {
 			t.Fatal(err)
@@ -54,7 +54,7 @@ func TestExecute(t *testing.T) {
 		os.Mkdir(sub, 0o755)
 		os.WriteFile(filepath.Join(sub, "y"), nil, 0o644)
 
-		v := core.New()
+		v := viye.New()
 		v.Register(&Tool{})
 		var out strings.Builder
 		if err := v.Run(&out, []string{"viye", dir, "sub"}); err != nil {
@@ -66,7 +66,7 @@ func TestExecute(t *testing.T) {
 	})
 
 	t.Run("non existent path", func(t *testing.T) {
-		ctx := &core.Context{Path: []string{"/nonexistent_foobar"}, Dir: "."}
+		ctx := &viye.Context{Path: []string{"/nonexistent_foobar"}, Dir: "."}
 		if _, err := (&Tool{}).Execute(ctx); err == nil {
 			t.Error("expected error")
 		}

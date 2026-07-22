@@ -1,4 +1,4 @@
-package core
+package viye
 
 import (
 	"fmt"
@@ -10,6 +10,9 @@ import (
 type Context struct {
 	Path []string // ancestor chain [root, ..., target]
 	Dir  string   // working directory
+
+	Cmd  string   // first word of the leaf path component
+	Args []string // remaining words of the leaf path component
 
 	dispatch func(*Context) (string, error) // set by [Viye.dispatch] for tool chaining
 }
@@ -47,9 +50,12 @@ func (v *Viye) Run(out io.Writer, args []string) error {
 		os.Exit(0)
 	}
 
+	cmd, cmdArgs := splitLeaf(path[len(path)-1])
 	res, err := v.dispatch(&Context{
 		Path: path,
 		Dir:  ".", // TODO: get cwd
+		Cmd:  cmd,
+		Args: cmdArgs,
 	})
 	if err != nil {
 		return err
@@ -81,6 +87,18 @@ func (v *Viye) dispatch(ctx *Context) (string, error) {
 	return "", nil
 }
 
+// splitLeaf splits a leaf path component into command name and args.
+// For "mkdir dir" returns ("mkdir", []string{"dir"}).
+// For "$ go run ." returns ("$", []string{"go", "run", "."}).
+// For "ip" returns ("ip", nil).
+func splitLeaf(leaf string) (cmd string, args []string) {
+	parts := strings.Fields(leaf)
+	if len(parts) == 0 {
+		return "", nil
+	}
+	return parts[0], parts[1:]
+}
+
 // splitArgs builds path by splitting each arg on "/"
 // for absolute paths(/...), leading / is preserved as part of first component.
 // for home paths(~...), ~ is the first comonents
@@ -107,13 +125,32 @@ func splitArg(arg string) []string {
 		}
 		// parts[i] is the first non-empty segment → attach it to "/"
 		result := []string{"/" + parts[i]}
-		result = append(result, parts[i+1:]...)
+		i++
+		for ; i < len(parts); i++ {
+			if parts[i] != "" {
+				result = append(result, parts[i])
+			}
+		}
 		return result
 	case strings.HasPrefix(arg, "~"):
-		return strings.Split(arg, "/")
+		parts := strings.Split(arg, "/")
+		var result []string
+		for _, p := range parts {
+			if p != "" {
+				result = append(result, p)
+			}
+		}
+		return result
 	case strings.HasPrefix(arg, "http://") || strings.HasPrefix(arg, "https://"):
 		return []string{arg}
 	default:
-		return strings.Split(arg, "/")
+		parts := strings.Split(arg, "/")
+		var result []string
+		for _, p := range parts {
+			if p != "" {
+				result = append(result, p)
+			}
+		}
+		return result
 	}
 }

@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/olexsmir/viye/core"
+	"github.com/olexsmir/viye/internal/viye"
 )
 
 type Tool struct{}
 
 func (Tool) Name() string                 { return "ip" }
-func (Tool) Match(ctx *core.Context) bool { return len(ctx.Path) == 1 && ctx.Path[0] == "ip" }
-func (Tool) Execute(ctx *core.Context) (string, error) {
+func (Tool) Match(ctx *viye.Context) bool { return len(ctx.Path) == 1 && ctx.Path[0] == "ip" }
+func (Tool) Execute(ctx *viye.Context) (string, error) {
 	// TODO: if it's not possile to get  public ip, report only local
 
 	var buf strings.Builder

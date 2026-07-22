@@ -2,18 +2,20 @@ package files
 
 import (
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"github.com/olexsmir/viye/core"
-	"github.com/olexsmir/viye/core/osutil"
+	"github.com/olexsmir/viye/internal/osutil"
+	"github.com/olexsmir/viye/internal/viye"
 )
 
 type Tool struct{}
 
+// TODO: add ./ paths support
+
 func (Tool) Name() string { return "files(~/..., /...)" }
-func (Tool) Match(ctx *core.Context) bool {
+
+func (Tool) Match(ctx *viye.Context) bool {
 	p := ctx.Path[0]
 	if p == "~" || strings.HasPrefix(p, "/") {
 		return true
@@ -22,7 +24,7 @@ func (Tool) Match(ctx *core.Context) bool {
 	return err == nil
 }
 
-func (Tool) Execute(ctx *core.Context) (string, error) {
+func (Tool) Execute(ctx *viye.Context) (string, error) {
 	path := resolve(ctx.Path[0], ctx.Dir)
 
 	info, err := os.Stat(path)
@@ -39,8 +41,8 @@ func (Tool) Execute(ctx *core.Context) (string, error) {
 		ctx.Path = ctx.Path[1:]
 		return ctx.Next()
 
-	case info.Mode()&0o111 != 0:
-		return runExec(path)
+	// case info.Mode()&0o111 != 0:
+	// 	return runExec(path)
 
 	default:
 		return "", osutil.Open(path)
@@ -79,11 +81,11 @@ func listDir(dir string) (string, error) {
 	return b.String(), nil
 }
 
-func runExec(path string) (string, error) {
-	cmd := exec.Command(path)
-	out, err := cmd.Output()
-	if err != nil {
-		return "", err
-	}
-	return string(out), nil
-}
+// func runExec(path string) (string, error) {
+// 	cmd := exec.Command(path)
+// 	out, err := cmd.Output()
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	return string(out), nil
+// }

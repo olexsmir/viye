@@ -1,6 +1,6 @@
 package gobin
 
-import "github.com/olexsmir/viye/core"
+import "github.com/olexsmir/viye/internal/viye"
 
 const menu = `
 - build
@@ -14,11 +14,11 @@ const menu = `
 type Tool struct{}
 
 func (Tool) Name() string { return "go" }
-func (Tool) Match(ctx *core.Context) bool {
+func (Tool) Match(ctx *viye.Context) bool {
 	return ctx.Path[0] == "go"
 }
 
-func (Tool) Execute(ctx *core.Context) (string, error) {
+func (Tool) Execute(ctx *viye.Context) (string, error) {
 	switch ctx.Path[1] {
 	case "build":
 		return "| will build", nil
