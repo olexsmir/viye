@@ -1,11 +1,12 @@
 package files
 
 import (
+	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/olexsmir/viye/internal/osutil"
 	"github.com/olexsmir/viye/internal/viye"
 )
 
@@ -33,7 +34,11 @@ func (Tool) Execute(ctx *viye.Context) (string, error) {
 	switch {
 	case info.IsDir():
 		if len(ctx.Path) == 1 {
-			return listDir(path)
+			ls, err := listDir(path)
+			if err != nil {
+				return "", err
+			}
+			return viye.FormatBulltlist(ls), nil
 		}
 		ctx.Dir = path
 		ctx.Path = ctx.Path[1:]
@@ -43,7 +48,11 @@ func (Tool) Execute(ctx *viye.Context) (string, error) {
 	// 	return runExec(path)
 
 	default:
-		return "", osutil.Open(path)
+		s, err := head(path, 10)
+		if err != nil {
+			return "", err
+		}
+		return s, nil
 	}
 }
 
@@ -79,11 +88,20 @@ func listDir(dir string) (string, error) {
 	return b.String(), nil
 }
 
-// func runExec(path string) (string, error) {
-// 	cmd := exec.Command(path)
-// 	out, err := cmd.Output()
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	return string(out), nil
-// }
+func head(path string, n int) (string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	sc := bufio.NewScanner(f)
+	var b strings.Builder
+	for i := 0; i < n && sc.Scan(); i++ {
+		fmt.Fprintf(&b, "| %s\n", sc.Text())
+	}
+	if sc.Scan() {
+		b.WriteString("| ...\n")
+	}
+	return b.String(), sc.Err()
+}

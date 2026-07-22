@@ -68,5 +68,5 @@ func runGo(dir, subcmd string, args ...string) (string, error) {
 	cmd := exec.Command("go", append([]string{subcmd}, args...)...)
 	cmd.Dir = dir
 	out, _ := cmd.CombinedOutput()
-	return viye.Indent(string(out)), nil
+	return viye.FormatOutput(string(out)), nil
 }

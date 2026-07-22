@@ -2,7 +2,7 @@ package viye
 
 import "strings"
 
-func Indent(s string) string {
+func FormatOutput(s string) string {
 	s = strings.TrimSuffix(s, "\n")
 	if s == "" {
 		return ""
@@ -13,6 +13,16 @@ func Indent(s string) string {
 			lines[i] = "|"
 		} else {
 			lines[i] = "| " + line
+		}
+	}
+	return strings.Join(lines, "\n") + "\n"
+}
+
+func FormatBulltlist(s string) string {
+	lines := strings.Split(s, "\n")
+	for i, line := range lines {
+		if line != "" {
+			lines[i] = "- " + line
 		}
 	}
 	return strings.Join(lines, "\n") + "\n"

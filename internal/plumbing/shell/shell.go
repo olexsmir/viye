@@ -35,7 +35,7 @@ func (Tool) Execute(ctx *viye.Context) (string, error) {
 				return "", fmt.Errorf("timeout: command exceeded 5s")
 			}
 		}
-		return viye.Indent(string(out)), nil
+		return viye.FormatOutput(string(out)), nil
 
 	case isBGCmd(ctx):
 		cmd := exec.Command("sh", "-c", strings.Join(ctx.Args, " "))
