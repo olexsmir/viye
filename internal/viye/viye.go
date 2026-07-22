@@ -53,7 +53,7 @@ func (v *Viye) Run(out io.Writer, args []string) error {
 	cmd, cmdArgs := splitLeaf(path[len(path)-1])
 	res, err := v.dispatch(&Context{
 		Path: path,
-		Dir:  ".", // TODO: get cwd
+		Dir:  mustGetCwd(),
 		Cmd:  cmd,
 		Args: cmdArgs,
 	})
@@ -153,4 +153,12 @@ func splitArg(arg string) []string {
 		}
 		return result
 	}
+}
+
+func mustGetCwd() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(fmt.Sprintf("failed to get cwd: %v", err))
+	}
+	return dir
 }
