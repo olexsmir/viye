@@ -62,6 +62,17 @@ func TestSplitArg(t *testing.T) {
 		{"~/foo", []string{"~", "foo"}},
 		{"~/a/b", []string{"~", "a", "b"}},
 
+		// ./ paths
+		{"./", []string{"."}},
+		{"./foo", []string{"./foo"}},
+		{"./foo/bar", []string{"foo", "bar"}},
+		{"././foo", []string{"./foo"}},
+		{"./././", []string{"."}},
+		{".", []string{"."}},
+		{"..", []string{".."}},
+		{"../foo", []string{"..", "foo"}},
+		{"./../foo", []string{"..", "foo"}},
+
 		// urls
 		{"http://example.com", []string{"http://example.com"}},
 		{"https://example.com/path", []string{"https://example.com/path"}},
@@ -82,14 +93,39 @@ func TestSplitArg(t *testing.T) {
 }
 
 func TestSplitArgs(t *testing.T) {
-	got := splitArgs([]string{"/tmp/foo", "bar/baz"})
-	want := []string{"/tmp", "foo", "bar", "baz"}
-	if len(got) != len(want) {
-		t.Errorf("splitArgs = %v; want %v", got, want)
-	} else {
+	tests := []struct {
+		args    []string
+		want    []string
+		wantB   []string
+	}{
+		{[]string{"/tmp/foo", "bar/baz"}, []string{"/tmp", "foo", "bar", "baz"}, nil},
+		{[]string{"./foo", "bar"}, []string{"./foo", "bar"}, nil},
+		{[]string{"./"}, []string{"."}, nil},
+		{[]string{"././foo", "./bar"}, []string{"./foo", "./bar"}, nil},
+		{[]string{"demo"}, []string{"demo"}, nil},
+		{[]string{"demo", "--", ": name: olex"}, []string{"demo"}, []string{": name: olex"}},
+		{[]string{"demo", "--", ": name: olex", ": age: 30"}, []string{"demo"}, []string{": name: olex", ": age: 30"}},
+		{[]string{"--", ": body"}, nil, []string{": body"}},
+	}
+	for _, tt := range tests {
+		got, gotB := splitArgs(tt.args)
+		if len(got) != len(tt.want) {
+			t.Errorf("splitArgs(%v) path = %v; want %v", tt.args, got, tt.want)
+			continue
+		}
 		for i := range got {
-			if got[i] != want[i] {
-				t.Errorf("splitArgs = %v; want %v", got, want)
+			if got[i] != tt.want[i] {
+				t.Errorf("splitArgs(%v) path = %v; want %v", tt.args, got, tt.want)
+				break
+			}
+		}
+		if len(gotB) != len(tt.wantB) {
+			t.Errorf("splitArgs(%v) body = %v; want %v", tt.args, gotB, tt.wantB)
+			continue
+		}
+		for i := range gotB {
+			if gotB[i] != tt.wantB[i] {
+				t.Errorf("splitArgs(%v) body = %v; want %v", tt.args, gotB, tt.wantB)
 				break
 			}
 		}

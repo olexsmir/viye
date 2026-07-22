@@ -25,14 +25,7 @@ func (Tool) Execute(ctx *viye.Context) (string, error) {
 		cmd := exec.Command("sh", "-c", strings.Join(ctx.Args, " "))
 		cmd.Dir = ctx.Dir
 		out, _ := cmd.CombinedOutput()
-
-		lines := strings.Split(string(out), "\n")
-		for i, line := range lines {
-			if line != "" {
-				lines[i] = "| " + line
-			}
-		}
-		return strings.Join(lines, "\n"), nil
+		return viye.Indent(string(out)), nil
 
 	case isBGCmd(ctx):
 		cmd := exec.Command("sh", "-c", strings.Join(ctx.Args, " "))

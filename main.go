@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/olexsmir/viye/internal/plumbing/json"
 	"github.com/olexsmir/viye/internal/plumbing/files"
+	"github.com/olexsmir/viye/internal/plumbing/gobin"
 	"github.com/olexsmir/viye/internal/plumbing/ip"
 	"github.com/olexsmir/viye/internal/plumbing/shell"
 	"github.com/olexsmir/viye/internal/plumbing/url"
@@ -17,6 +19,8 @@ func main() {
 	v.Register(&shell.Tool{})
 	v.Register(&url.Tool{})
 	v.Register(&ip.Tool{})
+	v.Register(&gobin.Tool{})
+	v.Register(&json.Tool{})
 
 	if err := v.Run(os.Stdout, os.Args); err != nil {
 		fmt.Fprintf(os.Stderr, "viye: %v\n", err)

@@ -11,8 +11,6 @@ import (
 
 type Tool struct{}
 
-// TODO: add ./ paths support
-
 func (Tool) Name() string { return "files(~/..., /...)" }
 
 func (Tool) Match(ctx *viye.Context) bool {

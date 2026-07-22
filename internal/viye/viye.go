@@ -13,6 +13,7 @@ type Context struct {
 
 	Cmd  string   // first word of the leaf path component
 	Args []string // remaining words of the leaf path component
+	Body []string // body lines from : children (edited data for two-phase execution)
 
 	dispatch func(*Context) (string, error) // set by [Viye.dispatch] for tool chaining
 }
@@ -45,7 +46,7 @@ func (v *Viye) Run(out io.Writer, args []string) error {
 		return v.showHelp(out)
 	}
 
-	path := splitArgs(args[1:])
+	path, body := splitArgs(args[1:])
 	if len(path) == 0 {
 		os.Exit(0)
 	}
@@ -56,6 +57,7 @@ func (v *Viye) Run(out io.Writer, args []string) error {
 		Dir:  mustGetCwd(),
 		Cmd:  cmd,
 		Args: cmdArgs,
+		Body: body,
 	})
 	if err != nil {
 		return err
@@ -99,16 +101,27 @@ func splitLeaf(leaf string) (cmd string, args []string) {
 	return parts[0], parts[1:]
 }
 
-// splitArgs builds path by splitting each arg on "/"
+// splitArgs builds path by splitting each arg on "/" and body on "--".
+// Everything before "--" is the path (split into components).
+// Everything after "--" is the body (kept as-is, one element per line).
+// If there's no "--", body is nil.
 // for absolute paths(/...), leading / is preserved as part of first component.
 // for home paths(~...), ~ is the first comonents
 // urls are kept as single component
-func splitArgs(args []string) []string {
-	var path []string
+func splitArgs(args []string) (path []string, body []string) {
+	sawSep := false
 	for _, arg := range args {
-		path = append(path, splitArg(arg)...)
+		if !sawSep && arg == "--" {
+			sawSep = true
+			continue
+		}
+		if !sawSep {
+			path = append(path, splitArg(arg)...)
+		} else {
+			body = append(body, arg)
+		}
 	}
-	return path
+	return
 }
 
 func splitArg(arg string) []string {
@@ -144,7 +157,18 @@ func splitArg(arg string) []string {
 	case strings.HasPrefix(arg, "http://") || strings.HasPrefix(arg, "https://"):
 		return []string{arg}
 	default:
-		parts := strings.Split(arg, "/")
+		s := strings.TrimPrefix(arg, "./")
+		if s != arg {
+			if s == "" {
+				return []string{"."}
+			}
+			// No "/" left to split on — keep original (e.g. "./..." stays "./...")
+			if !strings.Contains(s, "/") {
+				return []string{arg}
+			}
+			return splitArg(s)
+		}
+		parts := strings.Split(s, "/")
 		var result []string
 		for _, p := range parts {
 			if p != "" {

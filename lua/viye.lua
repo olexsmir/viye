@@ -39,6 +39,52 @@ local function has_children()
   return next_line ~= "" and indent(next_line) > depth
 end
 
+-- Collect : body lines under the current line (siblings at depth+2)
+-- Returns list of stripped lines (with ": " prefix preserved)
+local function collect_body()
+  local lnum = vim.fn.line "."
+  local depth = indent(vim.fn.getline(lnum))
+  local body = {}
+  local i = lnum + 1
+  while i <= vim.fn.line "$" do
+    local l = vim.fn.getline(i)
+    if l == "" then break end
+    local d = indent(l)
+    if d <= depth then break end
+    if d == depth + 2 and l:find("^%s*: ") then
+      table.insert(body, vim.trim(l))
+    end
+    i = i + 1
+  end
+  return body
+end
+
+-- Remove | output lines under the current line (siblings at depth+2)
+-- Returns the line number after the removed block, or nil if nothing removed
+local function remove_output()
+  local lnum = vim.fn.line "."
+  local depth = indent(vim.fn.getline(lnum))
+  local first = nil
+  local last = nil
+  local i = lnum + 1
+  while i <= vim.fn.line "$" do
+    local l = vim.fn.getline(i)
+    if l == "" then break end
+    local d = indent(l)
+    if d <= depth then break end
+    if d == depth + 2 and l:find("^%s*| ") then
+      if first == nil then first = i end
+      last = i
+    end
+    i = i + 1
+  end
+  if first then
+    vim.cmd(string.format("%d,%ddelete _", first, last))
+    return first
+  end
+  return nil
+end
+
 local function collapse()
   local lnum = vim.fn.line "."
   local depth = indent(vim.fn.getline(lnum))
@@ -64,15 +110,34 @@ local function toggle_bullet()
   if toggled ~= line then vim.fn.setline(lnum, toggled) end
 end
 
-local function insert_output(output)
-  local lnum = vim.fn.line "."
-  local pad = string.rep(" ", indent(vim.fn.getline(lnum)) + 2)
+local function insert_output(output, after_lnum)
+  after_lnum = after_lnum or vim.fn.line "."
+  local pad = string.rep(" ", indent(vim.fn.getline(after_lnum)) + 2)
   local lines = vim.split(output, "\n", { trimempty = true })
   for i, line in ipairs(lines) do lines[i] = pad .. line end
-  vim.fn.append(lnum, lines)
+  vim.fn.append(after_lnum, lines)
 end
 
-local function exec()
+-- Find the last child line at depth+2 under the current line
+local function find_last_child()
+  local lnum = vim.fn.line "."
+  local depth = indent(vim.fn.getline(lnum))
+  local last = lnum
+  local i = lnum + 1
+  while i <= vim.fn.line "$" do
+    local l = vim.fn.getline(i)
+    if l == "" then break end
+    local d = indent(l)
+    if d <= depth then break end
+    if d == depth + 2 then
+      last = i
+    end
+    i = i + 1
+  end
+  return last
+end
+
+local function exec(reenter)
   local line = vim.fn.getline "."
   if is_data(line) then
     local lnum = vim.fn.line "."
@@ -82,7 +147,7 @@ local function exec()
       local l = vim.fn.getline(i)
       if not is_data(l) and indent(l) < depth and l:find "%S" then
         vim.fn.cursor(i, 1)
-        exec()
+        exec(true)
         return
       end
       i = i - 1
@@ -90,7 +155,7 @@ local function exec()
     return
   end
 
-  if has_children() then
+  if not reenter and has_children() then
     collapse()
     toggle_bullet()
     return
@@ -99,7 +164,15 @@ local function exec()
   local path = build_path()
   if path == "" then return end
 
+  local body = reenter and collect_body() or {}
+
   local cmd = "viye " .. vim.fn.shellescape(path)
+  if #body > 0 then
+    cmd = cmd .. " --"
+    for _, line in ipairs(body) do
+      cmd = cmd .. " " .. vim.fn.shellescape(line)
+    end
+  end
   vim.notify("viye: " .. cmd, vim.log.levels.INFO)
 
   local out = vim.fn.system(cmd)
@@ -109,8 +182,12 @@ local function exec()
   end
 
   if out ~= "" then
-    insert_output(out)
-    toggle_bullet()
+    remove_output()
+    local target = reenter and find_last_child() or vim.fn.line "."
+    insert_output(out, target)
+    if not reenter then
+      toggle_bullet()
+    end
   end
 end
 

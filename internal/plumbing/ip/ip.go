@@ -1,11 +1,13 @@
 package ip
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/olexsmir/viye/internal/viye"
 )
@@ -53,7 +55,15 @@ func getLocalIP() (string, error) {
 }
 
 func getPublicIP() (string, error) {
-	resp, err := http.Get("https://ifconfig.me/ip")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://ifconfig.me/ip", nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}

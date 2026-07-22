@@ -25,6 +25,8 @@ func TestMatch(t *testing.T) {
 		{"f", dir, true},
 		{"nope", dir, false},
 		{"$ ls", dir, false},
+		{".", dir, true},
+		{"..", dir, true},
 	}
 	for _, tt := range tests {
 		got := (&Tool{}).Match(&viye.Context{Path: []string{tt.p}, Dir: tt.dir})
@@ -83,6 +85,8 @@ func TestResolve(t *testing.T) {
 		{"~/foo", ".", filepath.Join(home, "foo")},
 		{"/abs/path", ".", "/abs/path"},
 		{"rel", "/base", "/base/rel"},
+		{".", "/base", "/base"},
+		{"..", "/base/sub", "/base"},
 	}
 	for _, tt := range tests {
 		got := resolve(tt.p, tt.dir)
