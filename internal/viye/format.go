@@ -18,12 +18,12 @@ func FormatOutput(s string) string {
 	return strings.Join(lines, "\n") + "\n"
 }
 
-func FormatBulletlist(s string) string {
+func FormatBulletList(s string) string {
 	lines := strings.Split(s, "\n")
 	for i, line := range lines {
 		if line != "" {
 			lines[i] = "- " + line
 		}
 	}
-	return strings.Join(lines, "\n") + "\n"
+	return strings.Join(lines, "\n")
 }

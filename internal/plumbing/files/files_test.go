@@ -45,8 +45,9 @@ func TestExecute(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got != "- x\n" {
-			t.Errorf("Execute = %q; want %q", got, "x\\n")
+		want := "| x\n"
+		if got != want {
+			t.Errorf("Execute = %q; want %q", got, want)
 		}
 	})
 
@@ -62,8 +63,9 @@ func TestExecute(t *testing.T) {
 		if err := v.Run(&out, []string{"viye", dir, "sub"}); err != nil {
 			t.Fatal(err)
 		}
-		if out.String() != "y\n" {
-			t.Errorf("Run = %q; want %q", out.String(), "y\\n")
+		want := "| y\n"
+		if out.String() != want {
+			t.Errorf("Run = %q; want %q", out.String(), want)
 		}
 	})
 
