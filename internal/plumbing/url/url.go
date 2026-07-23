@@ -9,7 +9,7 @@ import (
 
 type Tool struct{}
 
-func (Tool) Name() string { return "url(http)" }
+func (Tool) Name() string { return "url(http://.*, https://.*)" }
 func (Tool) Match(ctx *viye.Context) bool {
 	return strings.HasPrefix(ctx.Path[0], "http://") || strings.HasPrefix(ctx.Path[0], "https://")
 }
