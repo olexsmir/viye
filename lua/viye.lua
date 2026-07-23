@@ -80,13 +80,13 @@ local function exec()
         end
       end
 
-      if last_child then vim.cmd(string.format("%d,%ddelete _", first_child, last_child)) end
-
       local out = vim.fn.system(cmd)
       if vim.v.shell_error ~= 0 then
         vim.notify("viye: " .. (out:gsub("\n$", "")), vim.log.levels.ERROR)
         return
       end
+
+      if last_child then vim.cmd(string.format("%d,%ddelete _", first_child, last_child)) end
 
       if out ~= "" then
         local pad = string.rep(" ", depth + 2)
