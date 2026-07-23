@@ -42,7 +42,7 @@ func (v *Viye) Run(out io.Writer, args []string) error {
 	if len(args) <= 1 {
 		return nil
 	}
-	if args[1] == "--help" {
+	if args[1] == "help" {
 		return v.showHelp(out)
 	}
 
