@@ -38,7 +38,7 @@ func (Tool) Execute(ctx *viye.Context) (string, error) {
 			if err != nil {
 				return "", err
 			}
-			return viye.FormatBulltlist(ls), nil
+			return viye.FormatBulletlist(ls), nil
 		}
 		ctx.Dir = path
 		ctx.Path = ctx.Path[1:]

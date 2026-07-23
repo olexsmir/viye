@@ -45,7 +45,7 @@ func TestExecute(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got != "x\n" {
+		if got != "- x\n" {
 			t.Errorf("Execute = %q; want %q", got, "x\\n")
 		}
 	})

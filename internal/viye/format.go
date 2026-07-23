@@ -18,7 +18,7 @@ func FormatOutput(s string) string {
 	return strings.Join(lines, "\n") + "\n"
 }
 
-func FormatBulltlist(s string) string {
+func FormatBulletlist(s string) string {
 	lines := strings.Split(s, "\n")
 	for i, line := range lines {
 		if line != "" {
