@@ -3,6 +3,7 @@ package ip
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -17,23 +18,28 @@ type Tool struct{}
 func (Tool) Name() string                 { return "ip" }
 func (Tool) Match(ctx *viye.Context) bool { return len(ctx.Path) == 1 && ctx.Path[0] == "ip" }
 func (Tool) Execute(ctx *viye.Context) (string, error) {
-	// TODO: if it's not possile to get  public ip, report only local
+	pip, perr := getPublicIP()
+	lip, lerr := getLocalIP()
+	if perr != nil && lerr != nil {
+		return "", fmt.Errorf("couldn't resolve public and local ips")
+	}
 
 	var buf strings.Builder
-	buf.WriteString("| ")
+	_, _ = buf.WriteString("| ")
 
-	pip, err := getPublicIP()
-	if err != nil {
-		return "", err
+	if perr == nil && lerr == nil {
+		_, _ = buf.WriteString(pip)
+		_, _ = buf.WriteString(" / ")
+		_, _ = buf.WriteString(lip)
 	}
-	_, _ = buf.WriteString(pip)
-	_, _ = buf.WriteString(" / ")
 
-	lip, err := getLocalIP()
-	if err != nil {
-		return "", err
+	if perr == nil && lerr != nil {
+		_, _ = buf.WriteString(pip)
 	}
-	_, _ = buf.WriteString(lip)
+
+	if lerr == nil && perr != nil {
+		_, _ = buf.WriteString(pip)
+	}
 
 	_ = buf.WriteByte('\n')
 	return buf.String(), nil
