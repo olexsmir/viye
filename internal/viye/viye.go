@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"strings"
+
+	"github.com/olexsmir/viye/internal/version"
 )
 
 type Context struct {
@@ -44,6 +46,10 @@ func (v *Viye) Run(out io.Writer, args []string) error {
 	}
 	if args[1] == "help" {
 		return v.showHelp(out)
+	}
+	if args[1] == "--version" {
+		fmt.Fprint(out, "| viye version: "+version.Version)
+		return nil
 	}
 
 	path, body := splitArgs(args[1:])
