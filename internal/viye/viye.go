@@ -107,13 +107,10 @@ func splitLeaf(leaf string) (cmd string, args []string) {
 	return parts[0], parts[1:]
 }
 
-// splitArgs builds path by splitting each arg on "/" and body on "--".
-// Everything before "--" is the path (split into components).
+// splitArgs builds path and body from args.
+// Everything before "--" is the path (each arg is one component).
 // Everything after "--" is the body (kept as-is, one element per line).
 // If there's no "--", body is nil.
-// for absolute paths(/...), leading / is preserved as part of first component.
-// for home paths(~...), ~ is the first comonents
-// urls are kept as single component
 func splitArgs(args []string) (path []string, body []string) {
 	sawSep := false
 	for _, arg := range args {
@@ -122,67 +119,12 @@ func splitArgs(args []string) (path []string, body []string) {
 			continue
 		}
 		if !sawSep {
-			path = append(path, splitArg(arg)...)
+			path = append(path, arg)
 		} else {
 			body = append(body, arg)
 		}
 	}
 	return
-}
-
-func splitArg(arg string) []string {
-	switch {
-	case strings.HasPrefix(arg, "/"):
-		parts := strings.Split(arg, "/")
-		// parts[0] is always "" for absolute paths
-		i := 0
-		for i < len(parts) && parts[i] == "" {
-			i++
-		}
-		if i >= len(parts) {
-			return []string{"/"}
-		}
-		// parts[i] is the first non-empty segment → attach it to "/"
-		result := []string{"/" + parts[i]}
-		i++
-		for ; i < len(parts); i++ {
-			if parts[i] != "" {
-				result = append(result, parts[i])
-			}
-		}
-		return result
-	case strings.HasPrefix(arg, "~"):
-		parts := strings.Split(arg, "/")
-		var result []string
-		for _, p := range parts {
-			if p != "" {
-				result = append(result, p)
-			}
-		}
-		return result
-	case strings.HasPrefix(arg, "http://") || strings.HasPrefix(arg, "https://"):
-		return []string{arg}
-	default:
-		s := strings.TrimPrefix(arg, "./")
-		if s != arg {
-			if s == "" {
-				return []string{"."}
-			}
-			// No "/" left to split on — keep original (e.g. "./..." stays "./...")
-			if !strings.Contains(s, "/") {
-				return []string{arg}
-			}
-			return splitArg(s)
-		}
-		parts := strings.Split(s, "/")
-		var result []string
-		for _, p := range parts {
-			if p != "" {
-				result = append(result, p)
-			}
-		}
-		return result
-	}
 }
 
 func mustGetCwd() string {

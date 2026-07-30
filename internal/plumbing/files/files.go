@@ -12,15 +12,11 @@ import (
 
 type Tool struct{}
 
-func (Tool) Name() string { return "files(~/..., /...)" }
+func (Tool) Name() string { return "files(~/..., /..., ./...)" }
 
 func (Tool) Match(ctx *viye.Context) bool {
-	p := ctx.Path[0]
-	if p == "~" || strings.HasPrefix(p, "/") {
-		return true
-	}
-	_, err := os.Stat(filepath.Join(ctx.Dir, p))
-	return err == nil
+	return strings.HasPrefix(ctx.Path[0], "/") || strings.HasPrefix(ctx.Path[0], "./") ||
+		strings.HasPrefix(ctx.Path[0], "~/")
 }
 
 func (Tool) Execute(ctx *viye.Context) (string, error) {

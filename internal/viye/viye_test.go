@@ -40,68 +40,16 @@ func TestSplitLeaf(t *testing.T) {
 	}
 }
 
-func TestSplitArg(t *testing.T) {
-	tests := []struct {
-		arg  string
-		want []string
-	}{
-		{"foo", []string{"foo"}},
-		{"foo/bar", []string{"foo", "bar"}},
-		{"foo/bar/", []string{"foo", "bar"}},
-		{"a/b/c", []string{"a", "b", "c"}},
-
-		// absolute paths
-		{"/", []string{"/"}},
-		{"/tmp", []string{"/tmp"}},
-		{"/tmp/foo", []string{"/tmp", "foo"}},
-		{"/tmp/foo/", []string{"/tmp", "foo"}},
-		{"/a/b/c", []string{"/a", "b", "c"}},
-
-		// home paths
-		{"~", []string{"~"}},
-		{"~/foo", []string{"~", "foo"}},
-		{"~/a/b", []string{"~", "a", "b"}},
-
-		// ./ paths
-		{"./", []string{"."}},
-		{"./foo", []string{"./foo"}},
-		{"./foo/bar", []string{"foo", "bar"}},
-		{"././foo", []string{"./foo"}},
-		{"./././", []string{"."}},
-		{".", []string{"."}},
-		{"..", []string{".."}},
-		{"../foo", []string{"..", "foo"}},
-		{"./../foo", []string{"..", "foo"}},
-
-		// urls
-		{"http://example.com", []string{"http://example.com"}},
-		{"https://example.com/path", []string{"https://example.com/path"}},
-	}
-	for _, tt := range tests {
-		got := splitArg(tt.arg)
-		if len(got) != len(tt.want) {
-			t.Errorf("splitArg(%q) = %v; want %v", tt.arg, got, tt.want)
-			continue
-		}
-		for i := range got {
-			if got[i] != tt.want[i] {
-				t.Errorf("splitArg(%q) = %v; want %v", tt.arg, got, tt.want)
-				break
-			}
-		}
-	}
-}
-
 func TestSplitArgs(t *testing.T) {
 	tests := []struct {
-		args    []string
-		want    []string
-		wantB   []string
+		args  []string
+		want  []string
+		wantB []string
 	}{
-		{[]string{"/tmp/foo", "bar/baz"}, []string{"/tmp", "foo", "bar", "baz"}, nil},
+		{[]string{"/tmp/foo", "bar/baz"}, []string{"/tmp/foo", "bar/baz"}, nil},
 		{[]string{"./foo", "bar"}, []string{"./foo", "bar"}, nil},
-		{[]string{"./"}, []string{"."}, nil},
-		{[]string{"././foo", "./bar"}, []string{"./foo", "./bar"}, nil},
+		{[]string{"./"}, []string{"./"}, nil},
+		{[]string{"././foo", "./bar"}, []string{"././foo", "./bar"}, nil},
 		{[]string{"demo"}, []string{"demo"}, nil},
 		{[]string{"demo", "--", ": name: olex"}, []string{"demo"}, []string{": name: olex"}},
 		{[]string{"demo", "--", ": name: olex", ": age: 30"}, []string{"demo"}, []string{": name: olex", ": age: 30"}},

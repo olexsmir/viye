@@ -10,28 +10,26 @@ import (
 )
 
 func TestMatch(t *testing.T) {
-	dir := t.TempDir()
-	os.Mkdir(filepath.Join(dir, "sub"), 0o755)
-	os.WriteFile(filepath.Join(dir, "f"), nil, 0o644)
-
 	tests := []struct {
-		p, dir string
-		m      bool
+		p string
+		m bool
 	}{
-		{"~", ".", true},
-		{"/tmp", ".", true},
-		{dir, ".", true},
-		{"sub", dir, true},
-		{"f", dir, true},
-		{"nope", dir, false},
-		{"$ ls", dir, false},
-		{".", dir, true},
-		{"..", dir, true},
+		{"~/foo", true},
+		{"/tmp", true},
+		{"/tmp/foo", true},
+		{"./foo", true},
+		{"./foo/bar", true},
+
+		{"nope", false},
+		{"$ ls", false},
+		{"~", false},
+		{".", false},
+		{"..", false},
 	}
 	for _, tt := range tests {
-		got := (&Tool{}).Match(&viye.Context{Path: []string{tt.p}, Dir: tt.dir})
+		got := (&Tool{}).Match(&viye.Context{Path: []string{tt.p}})
 		if got != tt.m {
-			t.Errorf("Match(%q, dir=%q) = %v; want %v", tt.p, tt.dir, got, tt.m)
+			t.Errorf("Match(%q) = %v; want %v", tt.p, got, tt.m)
 		}
 	}
 }
@@ -51,7 +49,7 @@ func TestExecute(t *testing.T) {
 		}
 	})
 
-	t.Run("navigate into subdir", func(t *testing.T) {
+	t.Run("navigate into subdir via full path", func(t *testing.T) {
 		dir := t.TempDir()
 		sub := filepath.Join(dir, "sub")
 		os.Mkdir(sub, 0o755)
@@ -60,7 +58,7 @@ func TestExecute(t *testing.T) {
 		v := viye.New()
 		v.Register(&Tool{})
 		var out strings.Builder
-		if err := v.Run(&out, []string{"viye", dir, "sub"}); err != nil {
+		if err := v.Run(&out, []string{"viye", sub}); err != nil {
 			t.Fatal(err)
 		}
 		want := "| y\n"

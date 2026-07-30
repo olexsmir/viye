@@ -11,7 +11,7 @@ import (
 type Tool struct{}
 
 func (Tool) Name() string               { return "config" }
-func (Tool) Match(c *viye.Context) bool { return c.Path[0] == "config" }
+func (Tool) Match(c *viye.Context) bool { return c.Cmd == "config" }
 func (Tool) Execute(c *viye.Context) (string, error) {
 	cfg, err := config.Load()
 	if err != nil {
