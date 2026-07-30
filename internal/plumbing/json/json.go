@@ -13,20 +13,19 @@ type Tool struct{}
 func (Tool) Name() string                 { return "json" }
 func (Tool) Match(ctx *viye.Context) bool { return ctx.Cmd == "json" }
 func (Tool) Execute(ctx *viye.Context) (string, error) {
-	// Phase 1: no body → return editable template
 	if len(ctx.Body) == 0 {
-		return ": name: your name\n: age: 0\n", nil
+		return ": name: your name\n" +
+			": age: 0\n", nil
 	}
 
-	// Phase 2: body present → parse and produce JSON
 	m := make(map[string]string)
 	for _, line := range ctx.Body {
-		// Strip ": " prefix
 		line = strings.TrimPrefix(line, ": ")
 		col := strings.Index(line, ":")
 		if col < 0 {
 			continue
 		}
+
 		key := strings.TrimSpace(line[:col])
 		val := strings.TrimSpace(line[col+1:])
 		if key != "" {

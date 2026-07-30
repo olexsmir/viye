@@ -21,35 +21,35 @@ func (Tool) Match(ctx *viye.Context) bool {
 	return isCmd(ctx) || isBGCmd(ctx) || isKill(ctx) || isMkdir(ctx)
 }
 
-func (Tool) Execute(ctx *viye.Context) (string, error) {
+func (Tool) Execute(c *viye.Context) (string, error) {
 	switch {
-	case isCmd(ctx):
-		ctxTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	case isCmd(c):
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		cmd := exec.CommandContext(ctxTimeout, "sh", "-c", strings.Join(ctx.Args, " "))
-		cmd.Dir = ctx.Dir
+		cmd := exec.CommandContext(ctx, "sh", "-c", strings.Join(c.Args, " "))
+		cmd.Dir = c.Dir
 		out, err := cmd.CombinedOutput()
 		if err != nil {
-			if ctxTimeout.Err() == context.DeadlineExceeded {
+			if ctx.Err() == context.DeadlineExceeded {
 				return "", fmt.Errorf("timeout: command exceeded 5s")
 			}
 		}
 		return viye.FormatOutput(string(out)), nil
 
-	case isBGCmd(ctx):
-		cmd := exec.Command("sh", "-c", strings.Join(ctx.Args, " "))
+	case isBGCmd(c):
+		cmd := exec.Command("sh", "-c", strings.Join(c.Args, " "))
 		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-		cmd.Dir = ctx.Dir
+		cmd.Dir = c.Dir
 		if err := cmd.Start(); err != nil {
 			return "", err
 		}
 		return fmt.Sprintf("| pid: %d", cmd.Process.Pid), nil
 
-	case isKill(ctx):
-		pid, err := strconv.Atoi(ctx.Args[0])
+	case isKill(c):
+		pid, err := strconv.Atoi(c.Args[0])
 		if err != nil {
-			return "", fmt.Errorf("kill: invalid pid %q", ctx.Args[0])
+			return "", fmt.Errorf("kill: invalid pid %q", c.Args[0])
 		}
 		p, err := os.FindProcess(pid)
 		if err != nil {
@@ -60,8 +60,8 @@ func (Tool) Execute(ctx *viye.Context) (string, error) {
 		}
 		return "| done\n", nil
 
-	case isMkdir(ctx):
-		path := filepath.Join(append([]string{ctx.Dir}, ctx.Args...)...)
+	case isMkdir(c):
+		path := filepath.Join(append([]string{c.Dir}, c.Args...)...)
 		if err := os.MkdirAll(path, 0o755); err != nil {
 			return "", fmt.Errorf("mkdir: %w", err)
 		}

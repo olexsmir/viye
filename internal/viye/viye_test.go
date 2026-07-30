@@ -2,6 +2,8 @@ package viye
 
 import (
 	"testing"
+
+	"olexsmir.xyz/x/is"
 )
 
 func TestSplitLeaf(t *testing.T) {
@@ -25,27 +27,18 @@ func TestSplitLeaf(t *testing.T) {
 	}
 	for _, tt := range tests {
 		cmd, args := splitLeaf(tt.leaf)
-		if cmd != tt.cmd {
-			t.Errorf("splitLeaf(%q) cmd = %q; want %q", tt.leaf, cmd, tt.cmd)
-		}
-		if len(args) != len(tt.args) {
-			t.Errorf("splitLeaf(%q) len(args) = %d; want %d", tt.leaf, len(args), len(tt.args))
-		} else {
+		is.Equal(t, tt.cmd, cmd)
+		is.Equal(t, len(tt.args), len(args))
+		if len(args) == len(tt.args) {
 			for i := range args {
-				if args[i] != tt.args[i] {
-					t.Errorf("splitLeaf(%q) args[%d] = %q; want %q", tt.leaf, i, args[i], tt.args[i])
-				}
+				is.Equal(t, tt.args[i], args[i])
 			}
 		}
 	}
 }
 
 func TestSplitArgs(t *testing.T) {
-	tests := []struct {
-		args  []string
-		want  []string
-		wantB []string
-	}{
+	tests := []struct{ args, want, wantB []string }{
 		{[]string{"/tmp/foo", "bar/baz"}, []string{"/tmp/foo", "bar/baz"}, nil},
 		{[]string{"./foo", "bar"}, []string{"./foo", "bar"}, nil},
 		{[]string{"./"}, []string{"./"}, nil},
@@ -57,24 +50,16 @@ func TestSplitArgs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		got, gotB := splitArgs(tt.args)
-		if len(got) != len(tt.want) {
-			t.Errorf("splitArgs(%v) path = %v; want %v", tt.args, got, tt.want)
-			continue
-		}
-		for i := range got {
-			if got[i] != tt.want[i] {
-				t.Errorf("splitArgs(%v) path = %v; want %v", tt.args, got, tt.want)
-				break
+		is.Equal(t, len(tt.want), len(got))
+		if len(got) == len(tt.want) {
+			for i := range got {
+				is.Equal(t, tt.want[i], got[i])
 			}
 		}
-		if len(gotB) != len(tt.wantB) {
-			t.Errorf("splitArgs(%v) body = %v; want %v", tt.args, gotB, tt.wantB)
-			continue
-		}
-		for i := range gotB {
-			if gotB[i] != tt.wantB[i] {
-				t.Errorf("splitArgs(%v) body = %v; want %v", tt.args, gotB, tt.wantB)
-				break
+		is.Equal(t, len(tt.wantB), len(gotB))
+		if len(gotB) == len(tt.wantB) {
+			for i := range gotB {
+				is.Equal(t, tt.wantB[i], gotB[i])
 			}
 		}
 	}

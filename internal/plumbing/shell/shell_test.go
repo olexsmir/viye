@@ -6,14 +6,15 @@ import (
 	"testing"
 
 	"github.com/olexsmir/viye/internal/viye"
+
+	"olexsmir.xyz/x/is"
 )
 
 func TestMatch(t *testing.T) {
 	tests := []struct {
-		path string
-		cmd  string
-		args []string
-		want bool
+		path, cmd string
+		args      []string
+		want      bool
 	}{
 		{"$", "$", nil, true},
 		{"$ go run .", "$", []string{"go", "run", "."}, true},
@@ -35,9 +36,7 @@ func TestMatch(t *testing.T) {
 			Cmd:  tt.cmd,
 			Args: tt.args,
 		})
-		if got != tt.want {
-			t.Errorf("Match(%q) = %v; want %v", tt.path, got, tt.want)
-		}
+		is.Equal(t, tt.want, got)
 	}
 }
 
@@ -49,12 +48,8 @@ func TestExecute(t *testing.T) {
 			Args: []string{"echo", "hello"},
 			Dir:  ".",
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if got != "| hello\n" {
-			t.Errorf("Execute($ echo hello) = %q; want %q", got, "| hello\\n")
-		}
+		is.Err(t, err, nil)
+		is.Equal(t, "| hello\n", got)
 	})
 
 	t.Run("bg cmd", func(t *testing.T) {
@@ -64,11 +59,9 @@ func TestExecute(t *testing.T) {
 			Args: []string{"sleep", "0"},
 			Dir:  ".",
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if got != "| pid: " && len(got) < 10 {
-			t.Errorf("Execute($$ sleep 0) = %q; want pid string", got)
+		is.Err(t, err, nil)
+		if len(got) < 10 {
+			t.Fatalf("got short output %q, expected pid string", got)
 		}
 	})
 
@@ -80,27 +73,20 @@ func TestExecute(t *testing.T) {
 			Args: []string{"sub"},
 			Dir:  dir,
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if _, err := os.Stat(filepath.Join(dir, "sub")); err != nil {
-			t.Errorf("dir not created: %v", err)
-		}
-		if got != "| created "+filepath.Join(dir, "sub")+"\n" {
-			t.Errorf("output = %q; want %q", got, "| created "+filepath.Join(dir, "sub")+"\n")
-		}
+		is.Err(t, err, nil)
+
+		_, err = os.Stat(filepath.Join(dir, "sub"))
+		is.Err(t, err, nil)
+		is.Equal(t, "| created "+filepath.Join(dir, "sub")+"\n", got)
 	})
 
 	t.Run("kill", func(t *testing.T) {
-		// no reliable way to test kill without a real process,
-		// just verify it doesn't panic with valid args structure
-		if _, err := (&Tool{}).Execute(&viye.Context{
+		_, err := (&Tool{}).Execute(&viye.Context{
 			Path: []string{"kill 999999"},
 			Cmd:  "kill",
 			Args: []string{"999999"},
 			Dir:  ".",
-		}); err == nil {
-			t.Log("kill on bogus pid returned nil (expected error or success)")
-		}
+		})
+		is.NotEqual(t, nil, err)
 	})
 }

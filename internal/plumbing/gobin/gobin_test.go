@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/olexsmir/viye/internal/viye"
+
+	"olexsmir.xyz/x/is"
 )
 
 func TestMatch(t *testing.T) {
@@ -19,9 +21,7 @@ func TestMatch(t *testing.T) {
 	}
 	for _, tt := range tests {
 		got := (Tool{}).Match(&viye.Context{Path: tt.path})
-		if got != tt.want {
-			t.Errorf("Match(%v) = %v; want %v", tt.path, got, tt.want)
-		}
+		is.Equal(t, tt.want, got)
 	}
 }
 

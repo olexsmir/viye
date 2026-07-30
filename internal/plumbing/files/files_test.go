@@ -7,19 +7,20 @@ import (
 	"testing"
 
 	"github.com/olexsmir/viye/internal/viye"
+
+	"olexsmir.xyz/x/is"
 )
 
 func TestMatch(t *testing.T) {
 	tests := []struct {
-		p string
-		m bool
+		p    string
+		want bool
 	}{
 		{"~/foo", true},
 		{"/tmp", true},
 		{"/tmp/foo", true},
 		{"./foo", true},
 		{"./foo/bar", true},
-
 		{"nope", false},
 		{"$ ls", false},
 		{"~", false},
@@ -28,9 +29,7 @@ func TestMatch(t *testing.T) {
 	}
 	for _, tt := range tests {
 		got := (&Tool{}).Match(&viye.Context{Path: []string{tt.p}})
-		if got != tt.m {
-			t.Errorf("Match(%q) = %v; want %v", tt.p, got, tt.m)
-		}
+		is.Equal(t, tt.want, got)
 	}
 }
 
@@ -40,13 +39,8 @@ func TestExecute(t *testing.T) {
 		os.WriteFile(filepath.Join(dir, "x"), nil, 0o644)
 		ctx := &viye.Context{Path: []string{dir}, Dir: "."}
 		got, err := (&Tool{}).Execute(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		want := "| x\n"
-		if got != want {
-			t.Errorf("Execute = %q; want %q", got, want)
-		}
+		is.Err(t, err, nil)
+		is.Equal(t, "| x\n", got)
 	})
 
 	t.Run("navigate into subdir via full path", func(t *testing.T) {
@@ -58,29 +52,21 @@ func TestExecute(t *testing.T) {
 		v := viye.New()
 		v.Register(&Tool{})
 		var out strings.Builder
-		if err := v.Run(&out, []string{"viye", sub}); err != nil {
-			t.Fatal(err)
-		}
-		want := "| y\n"
-		if out.String() != want {
-			t.Errorf("Run = %q; want %q", out.String(), want)
-		}
+		err := v.Run(&out, []string{"viye", sub})
+		is.Err(t, err, nil)
+		is.Equal(t, "| y\n", out.String())
 	})
 
 	t.Run("non existent path", func(t *testing.T) {
 		ctx := &viye.Context{Path: []string{"/nonexistent_foobar"}, Dir: "."}
-		if _, err := (&Tool{}).Execute(ctx); err == nil {
-			t.Error("expected error")
-		}
+		_, err := (&Tool{}).Execute(ctx)
+		is.NotEqual(t, nil, err)
 	})
 }
 
 func TestResolve(t *testing.T) {
 	home, _ := os.UserHomeDir()
-	tests := []struct {
-		p, dir string
-		want   string
-	}{
+	tests := []struct{ p, dir, want string }{
 		{"~", ".", home},
 		{"~/foo", ".", filepath.Join(home, "foo")},
 		{"/abs/path", ".", "/abs/path"},
@@ -90,9 +76,7 @@ func TestResolve(t *testing.T) {
 	}
 	for _, tt := range tests {
 		got := resolve(tt.p, tt.dir)
-		if got != tt.want {
-			t.Errorf("resolve(%q, %q) = %q; want %q", tt.p, tt.dir, got, tt.want)
-		}
+		is.Equal(t, tt.want, got)
 	}
 }
 
@@ -102,10 +86,6 @@ func TestListDir(t *testing.T) {
 	os.WriteFile(filepath.Join(dir, "a.txt"), nil, 0o644)
 
 	got, err := listDir(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got != "a.txt\nsub/\n" {
-		t.Errorf("listDir = %q; want %q", got, "a.txt\\nsub/\\n")
-	}
+	is.Err(t, err, nil)
+	is.Equal(t, "a.txt\nsub/\n", got)
 }
