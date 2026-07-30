@@ -47,9 +47,8 @@ func (v *Viye) Run(out io.Writer, args []string) error {
 	if args[1] == "help" {
 		return v.showHelp(out)
 	}
-	if args[1] == "--version" {
-		fmt.Fprint(out, "| viye version: "+version.Version)
-		return nil
+	if args[1] == "version" {
+		return v.showVersion(out)
 	}
 
 	path, body := splitArgs(args[1:])
@@ -78,6 +77,11 @@ func (v *Viye) showHelp(out io.Writer) error {
 	for _, tool := range v.tools {
 		fmt.Fprintf(out, "- %s\n", tool.Name())
 	}
+	return nil
+}
+
+func (v *Viye) showVersion(out io.Writer) error {
+	fmt.Fprint(out, "| viye version: "+version.Version)
 	return nil
 }
 
