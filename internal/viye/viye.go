@@ -1,6 +1,7 @@
 package viye
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -8,6 +9,8 @@ import (
 
 	"github.com/olexsmir/viye/internal/version"
 )
+
+var ErrPlumbingNotFound = errors.New("tool not found")
 
 type Context struct {
 	Path []string // ancestor chain [root, ..., target]
@@ -96,7 +99,7 @@ func (v *Viye) dispatch(ctx *Context) (string, error) {
 			return tool.Execute(ctx)
 		}
 	}
-	return "", nil
+	return "", ErrPlumbingNotFound
 }
 
 // splitLeaf splits a leaf path component into command name and args.
