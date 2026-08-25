@@ -33,3 +33,11 @@ func FormatBulletList(s []string) string {
 	}
 	return strings.Join(s, "\n")
 }
+
+func ParseData(body []string) []string {
+	var res []string
+	for _, line := range body {
+		res = append(res, strings.TrimPrefix(line, ": "))
+	}
+	return res
+}

@@ -48,3 +48,15 @@ func TestSplitLeaf(t *testing.T) {
 		is.Equal(t, tt.want, gotArgs)
 	}
 }
+
+func TestContext_ParseData(t *testing.T) {
+	for _, tt := range []struct{ inp, want []string }{
+		{[]string{": line1", ": line2"}, []string{"line1", "line2"}},
+		{[]string{": line1", "line2"}, []string{"line1", "line2"}},
+		{[]string{"line1", "line2"}, []string{"line1", "line2"}},
+		{[]string{"| not data", "| again not data"}, []string{"| not data", "| again not data"}},
+	} {
+		got := ParseData(tt.inp)
+		is.Equal(t, tt.want, got)
+	}
+}

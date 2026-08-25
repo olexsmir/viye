@@ -7,6 +7,7 @@ import (
 	"github.com/olexsmir/viye/internal/plumbing/config"
 	"github.com/olexsmir/viye/internal/plumbing/files"
 	"github.com/olexsmir/viye/internal/plumbing/gobin"
+	"github.com/olexsmir/viye/internal/plumbing/http"
 	"github.com/olexsmir/viye/internal/plumbing/ip"
 	"github.com/olexsmir/viye/internal/plumbing/json"
 	"github.com/olexsmir/viye/internal/plumbing/makefile"
@@ -20,6 +21,7 @@ func main() {
 	v := viye.New()
 	v.Register(&files.Tool{})
 	v.Register(&shell.Tool{})
+	v.Register(&http.Tool{})
 	v.Register(&url.Tool{})
 	v.Register(&ip.Tool{})
 	v.Register(&gobin.Tool{})
