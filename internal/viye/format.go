@@ -2,12 +2,7 @@ package viye
 
 import "strings"
 
-func FormatOutput(s string) string {
-	s = strings.TrimSuffix(s, "\n")
-	if s == "" {
-		return ""
-	}
-	lines := strings.Split(s, "\n")
+func FormatOutputList(lines []string) string {
 	for i, line := range lines {
 		if line == "" {
 			lines[i] = "|"
@@ -16,6 +11,14 @@ func FormatOutput(s string) string {
 		}
 	}
 	return strings.Join(lines, "\n") + "\n"
+}
+
+func FormatOutput(s string) string {
+	s = strings.TrimSuffix(s, "\n")
+	if s == "" {
+		return ""
+	}
+	return FormatOutputList(strings.Split(s, "\n"))
 }
 
 func FormatBulletListString(s string) string {

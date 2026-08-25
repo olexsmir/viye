@@ -16,8 +16,11 @@ import (
 
 type Tool struct{}
 
-func (Tool) Name() string               { return "shell($, $$, kill, mkdir)" }
-func (Tool) Match(c *viye.Context) bool { return isCmd(c) || isBGCmd(c) || isKill(c) || isMkdir(c) }
+func (Tool) Name() string { return "shell($, $$, ls, kill, mkdir)" }
+func (Tool) Match(c *viye.Context) bool {
+	return isCmd(c) || isBGCmd(c) || isLs(c) || isKill(c) || isMkdir(c)
+}
+
 func (Tool) Execute(c *viye.Context) (string, error) {
 	switch {
 	case isCmd(c):
@@ -42,6 +45,21 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 			return "", err
 		}
 		return fmt.Sprintf("| pid: %d", cmd.Process.Pid), nil
+
+	case isLs(c):
+		entries, err := os.ReadDir(c.Dir)
+		if err != nil {
+			return "", err
+		}
+		var res []string
+		for _, e := range entries {
+			name := e.Name()
+			if e.IsDir() {
+				name += "/"
+			}
+			res = append(res, name)
+		}
+		return viye.FormatOutputList(res), nil
 
 	case isKill(c):
 		pid, err := strconv.Atoi(c.Args[0])
@@ -71,5 +89,6 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 
 func isCmd(c *viye.Context) bool   { return c.Cmd == "$" }
 func isBGCmd(c *viye.Context) bool { return c.Cmd == "$$" }
+func isLs(c *viye.Context) bool    { return c.Cmd == "ls" }
 func isKill(c *viye.Context) bool  { return c.Cmd == "kill" && len(c.Args) == 1 }
 func isMkdir(c *viye.Context) bool { return c.Cmd == "mkdir" && len(c.Args) >= 1 }
