@@ -2,7 +2,6 @@ package gobin
 
 import (
 	"os/exec"
-	"strings"
 
 	"github.com/olexsmir/viye/internal/viye"
 )
@@ -22,36 +21,15 @@ const modMenu = `- tidy
 
 type Tool struct{}
 
-func (Tool) Name() string { return "go" }
-func (Tool) Match(ctx *viye.Context) bool {
-	return ctx.Cmd == "go" || (len(ctx.Path) > 0 && ctx.Path[0] == "go")
-}
-
-func (Tool) Execute(ctx *viye.Context) (string, error) {
-	var subcmd string
-	var args []string
-
-	if ctx.Cmd == "go" {
-		// cmd-based: 'go build ./...' → Cmd="go", Args=["build","./..."]
-		if len(ctx.Args) == 0 {
-			return menu, nil
-		}
-		subcmd = ctx.Args[0]
-		args = ctx.Args[1:]
-	} else {
-		// path-based: join remaining path as a command line, then re-split
-		if len(ctx.Path) < 2 {
-			return menu, nil
-		}
-		parts := strings.Fields(strings.Join(ctx.Path[1:], " "))
-		if len(parts) == 0 {
-			return menu, nil
-		}
-		subcmd = parts[0]
-		args = parts[1:]
+func (Tool) Name() string               { return "go" }
+func (Tool) Match(c *viye.Context) bool { return c.Cmd == "go" }
+func (Tool) Execute(c *viye.Context) (string, error) {
+	if len(c.Args) == 0 {
+		return menu, nil
 	}
 
-	switch subcmd {
+	args := c.Args[1:]
+	switch c.Args[0] {
 	case "mod":
 		if len(args) == 0 {
 			return modMenu, nil
@@ -61,7 +39,7 @@ func (Tool) Execute(ctx *viye.Context) (string, error) {
 		return menu, nil
 	}
 
-	return runGo(ctx.Dir, subcmd, args...)
+	return runGo(c.Dir, c.Args[0], args...)
 }
 
 func runGo(dir, subcmd string, args ...string) (string, error) {

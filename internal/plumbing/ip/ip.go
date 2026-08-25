@@ -15,9 +15,9 @@ import (
 
 type Tool struct{}
 
-func (Tool) Name() string                 { return "ip" }
-func (Tool) Match(ctx *viye.Context) bool { return len(ctx.Path) == 1 && ctx.Path[0] == "ip" }
-func (Tool) Execute(ctx *viye.Context) (string, error) {
+func (Tool) Name() string               { return "ip" }
+func (Tool) Match(c *viye.Context) bool { return c.Cmd == "ip" }
+func (Tool) Execute(c *viye.Context) (string, error) {
 	pip, perr := getPublicIP()
 	lip, lerr := getLocalIP()
 	if perr != nil && lerr != nil {

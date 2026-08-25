@@ -4,23 +4,23 @@ import (
 	"testing"
 
 	"github.com/olexsmir/viye/internal/viye"
-
 	"olexsmir.xyz/x/is"
 )
 
 func TestMatch(t *testing.T) {
 	tests := []struct {
-		path []string
+		cmd  string
+		args []string
 		want bool
 	}{
-		{[]string{"go"}, true},
-		{[]string{"go", "build"}, true},
-		{[]string{"go", "test", "./..."}, true},
-		{[]string{"other"}, false},
-		{[]string{}, false},
+		{"go", nil, true},
+		{"go", []string{"test"}, true},
+		{"go", []string{"test", "./..."}, true},
+		{"other", nil, false},
+		{"", nil, false},
 	}
 	for _, tt := range tests {
-		got := (Tool{}).Match(&viye.Context{Path: tt.path})
+		got := (Tool{}).Match(&viye.Context{Cmd: tt.cmd, Args: tt.args})
 		is.Equal(t, tt.want, got)
 	}
 }

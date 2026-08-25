@@ -10,32 +10,32 @@ import (
 
 type Tool struct{}
 
-func (Tool) Name() string                 { return "json" }
-func (Tool) Match(ctx *viye.Context) bool { return ctx.Cmd == "json" }
-func (Tool) Execute(ctx *viye.Context) (string, error) {
-	if len(ctx.Body) == 0 {
+func (Tool) Name() string               { return "json" }
+func (Tool) Match(c *viye.Context) bool { return c.Cmd == "json" }
+func (Tool) Execute(c *viye.Context) (string, error) {
+	if len(c.Body) == 0 {
 		return ": name: your name\n" +
 			": age: 0\n", nil
 	}
 
 	m := make(map[string]string)
-	for _, line := range ctx.Body {
+	for _, line := range c.Body {
 		line = strings.TrimPrefix(line, ": ")
-		col := strings.Index(line, ":")
-		if col < 0 {
+		before, after, ok := strings.Cut(line, ":")
+		if !ok {
 			continue
 		}
 
-		key := strings.TrimSpace(line[:col])
-		val := strings.TrimSpace(line[col+1:])
+		key := strings.TrimSpace(before)
+		val := strings.TrimSpace(after)
 		if key != "" {
 			m[key] = val
 		}
 	}
 
-	b, err := json.Marshal(m)
+	mashaled, err := json.Marshal(m)
 	if err != nil {
 		return "", fmt.Errorf("demo: %w", err)
 	}
-	return fmt.Sprintf("| %s\n", string(b)), nil
+	return fmt.Sprintf("| %s\n", string(mashaled)), nil
 }

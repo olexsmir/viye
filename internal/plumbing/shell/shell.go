@@ -16,11 +16,8 @@ import (
 
 type Tool struct{}
 
-func (Tool) Name() string { return "shell($, $$, kill, mkdir)" }
-func (Tool) Match(ctx *viye.Context) bool {
-	return isCmd(ctx) || isBGCmd(ctx) || isKill(ctx) || isMkdir(ctx)
-}
-
+func (Tool) Name() string               { return "shell($, $$, kill, mkdir)" }
+func (Tool) Match(c *viye.Context) bool { return isCmd(c) || isBGCmd(c) || isKill(c) || isMkdir(c) }
 func (Tool) Execute(c *viye.Context) (string, error) {
 	switch {
 	case isCmd(c):

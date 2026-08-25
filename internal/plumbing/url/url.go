@@ -10,10 +10,10 @@ import (
 type Tool struct{}
 
 func (Tool) Name() string { return "url(http://.*, https://.*)" }
-func (Tool) Match(ctx *viye.Context) bool {
-	return strings.HasPrefix(ctx.Path[0], "http://") || strings.HasPrefix(ctx.Path[0], "https://")
+func (Tool) Match(c *viye.Context) bool {
+	return strings.HasPrefix(c.Cmd, "http://") || strings.HasPrefix(c.Cmd, "https://")
 }
 
-func (Tool) Execute(ctx *viye.Context) (string, error) {
-	return "", osutil.Open(ctx.Path[0])
+func (Tool) Execute(c *viye.Context) (string, error) {
+	return "", osutil.Open(c.Cmd)
 }

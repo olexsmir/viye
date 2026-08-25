@@ -12,30 +12,25 @@ import (
 
 func TestMatch(t *testing.T) {
 	tests := []struct {
-		path, cmd string
-		args      []string
-		want      bool
+		cmd  string
+		args []string
+		want bool
 	}{
-		{"$", "$", nil, true},
-		{"$ go run .", "$", []string{"go", "run", "."}, true},
-		{"$$", "$$", nil, true},
-		{"$$ sleep 10", "$$", []string{"sleep", "10"}, true},
-		{"kill 1234", "kill", []string{"1234"}, true},
-		{"kill abc", "kill", []string{"abc"}, true},
-		{"mkdir dir", "mkdir", []string{"dir"}, true},
-		{"mkdir dir1 dir2", "mkdir", []string{"dir1", "dir2"}, true},
-		{"", "", nil, false},
-		{"ip", "ip", nil, false},
-		{"kill", "kill", nil, false},
-		{"kill 1 2", "kill", []string{"1", "2"}, false},
-		{"mkdir", "mkdir", nil, false},
+		{"", nil, false},
+		{"$", nil, true},
+		{"$", []string{"go", "run", "."}, true},
+		{"$$", nil, true},
+		{"$$", []string{"sleep", "10"}, true},
+		{"kill", []string{"1234"}, true},
+		{"kill", []string{"abc"}, true},
+		{"kill", nil, false},
+		{"kill", []string{"1", "2"}, false},
+		{"mkdir", []string{"dir"}, true},
+		{"mkdir", []string{"dir1", "dir2"}, true},
+		{"mkdir", nil, false},
 	}
 	for _, tt := range tests {
-		got := (&Tool{}).Match(&viye.Context{
-			Path: []string{tt.path},
-			Cmd:  tt.cmd,
-			Args: tt.args,
-		})
+		got := (&Tool{}).Match(&viye.Context{Cmd: tt.cmd, Args: tt.args})
 		is.Equal(t, tt.want, got)
 	}
 }

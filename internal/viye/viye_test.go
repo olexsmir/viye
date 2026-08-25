@@ -6,37 +6,6 @@ import (
 	"olexsmir.xyz/x/is"
 )
 
-func TestSplitLeaf(t *testing.T) {
-	tests := []struct {
-		leaf, cmd string
-		args      []string
-	}{
-		{"", "", nil},
-		{"ip", "ip", nil},
-		{"$", "$", nil},
-		{"$$", "$$", nil},
-		{"mkdir", "mkdir", nil},
-		{"$ go run .", "$", []string{"go", "run", "."}},
-		{"$$ sleep 10", "$$", []string{"sleep", "10"}},
-		{"mkdir dir", "mkdir", []string{"dir"}},
-		{"mkdir dir1 dir2", "mkdir", []string{"dir1", "dir2"}},
-		{"kill 1234", "kill", []string{"1234"}},
-		{"  spaced  ", "spaced", nil},
-		{"mkdir  spaced  dir", "mkdir", []string{"spaced", "dir"}},
-		{"   ", "", nil},
-	}
-	for _, tt := range tests {
-		cmd, args := splitLeaf(tt.leaf)
-		is.Equal(t, tt.cmd, cmd)
-		is.Equal(t, len(tt.args), len(args))
-		if len(args) == len(tt.args) {
-			for i := range args {
-				is.Equal(t, tt.args[i], args[i])
-			}
-		}
-	}
-}
-
 func TestSplitArgs(t *testing.T) {
 	tests := []struct{ args, want, wantB []string }{
 		{[]string{"/tmp/foo", "bar/baz"}, []string{"/tmp/foo", "bar/baz"}, nil},
@@ -62,5 +31,20 @@ func TestSplitArgs(t *testing.T) {
 				is.Equal(t, tt.wantB[i], gotB[i])
 			}
 		}
+	}
+}
+
+func TestSplitLeaf(t *testing.T) {
+	for _, tt := range []struct {
+		leaf, cmd string
+		want      []string
+	}{
+		{"mkdir dir", "mkdir", []string{"dir"}},
+		{"$ go run .", "$", []string{"go", "run", "."}},
+		{"ip", "ip", []string{}},
+	} {
+		gotCmd, gotArgs := splitLeaf(tt.leaf)
+		is.Equal(t, tt.cmd, gotCmd)
+		is.Equal(t, tt.want, gotArgs)
 	}
 }

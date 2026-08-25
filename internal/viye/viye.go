@@ -6,25 +6,24 @@ import (
 	"io"
 	"os"
 	"strings"
-
-	"github.com/olexsmir/viye/internal/version"
 )
+
+const Version = "0.0.1-alpha"
 
 var ErrPlumbingNotFound = errors.New("tool not found")
 
 type Context struct {
-	Path []string // ancestor chain [root, ..., target]
-	Dir  string   // working directory
+	Dir string // working directory
 
 	Cmd  string   // first word of the leaf path component
 	Args []string // remaining words of the leaf path component
+	Path []string // ancestor chain [root, ..., target]
 	Body []string // body lines from : children (edited data for two-phase execution)
 
 	dispatch func(*Context) (string, error) // set by [Viye.dispatch] for tool chaining
 }
 
 // Next continues dispatch with currect [Context] state.
-// Call after consuming .Path[0] and updating .Dir.
 func (c *Context) Next() (string, error) { return c.dispatch(c) }
 
 type Tool interface {
@@ -59,12 +58,9 @@ func (v *Viye) Run(out io.Writer, args []string) error {
 		os.Exit(0)
 	}
 
-	cmd, cmdArgs := splitLeaf(path[len(path)-1])
 	res, err := v.dispatch(&Context{
 		Path: path,
 		Dir:  mustGetCwd(),
-		Cmd:  cmd,
-		Args: cmdArgs,
 		Body: body,
 	})
 	if err != nil {
@@ -84,7 +80,7 @@ func (v *Viye) showHelp(out io.Writer) error {
 }
 
 func (v *Viye) showVersion(out io.Writer) error {
-	fmt.Fprint(out, "| viye version: "+version.Version)
+	fmt.Fprint(out, "| viye version: "+Version)
 	return nil
 }
 
@@ -93,6 +89,7 @@ func (v *Viye) dispatch(ctx *Context) (string, error) {
 	if len(ctx.Path) == 0 {
 		return "", nil
 	}
+	ctx.Cmd, ctx.Args = splitLeaf(ctx.Path[len(ctx.Path)-1])
 	ctx.dispatch = v.dispatch
 	for _, tool := range v.tools {
 		if tool.Match(ctx) {
@@ -103,7 +100,6 @@ func (v *Viye) dispatch(ctx *Context) (string, error) {
 }
 
 // splitLeaf splits a leaf path component into command name and args.
-// For "mkdir dir" returns ("mkdir", []string{"dir"}).
 // For "$ go run ." returns ("$", []string{"go", "run", "."}).
 // For "ip" returns ("ip", nil).
 func splitLeaf(leaf string) (cmd string, args []string) {

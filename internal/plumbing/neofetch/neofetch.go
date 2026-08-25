@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/olexsmir/viye/internal/osutil"
-	"github.com/olexsmir/viye/internal/version"
 	"github.com/olexsmir/viye/internal/viye"
 )
 
@@ -24,6 +23,6 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 	_, _ = fmt.Fprintf(&buf, "| OS: %s (%s)\n", osname, kernel)
 	_, _ = fmt.Fprintf(&buf, "| SYS: %s · %s\n", cpu, mem)
 	_, _ = fmt.Fprintf(&buf, "| Uptime: %s\n", uptime)
-	_, _ = fmt.Fprintf(&buf, "| Viye: %s\n", version.Version)
+	_, _ = fmt.Fprintf(&buf, "| Viye: %s\n", viye.Version)
 	return buf.String(), nil
 }
