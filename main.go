@@ -9,6 +9,7 @@ import (
 	"github.com/olexsmir/viye/internal/plumbing/gobin"
 	"github.com/olexsmir/viye/internal/plumbing/ip"
 	"github.com/olexsmir/viye/internal/plumbing/json"
+	"github.com/olexsmir/viye/internal/plumbing/makefile"
 	"github.com/olexsmir/viye/internal/plumbing/neofetch"
 	"github.com/olexsmir/viye/internal/plumbing/shell"
 	"github.com/olexsmir/viye/internal/plumbing/url"
@@ -25,6 +26,7 @@ func main() {
 	v.Register(&json.Tool{})
 	v.Register(&config.Tool{})
 	v.Register(&neofetch.Tool{})
+	v.Register(&makefile.Tool{})
 
 	if err := v.Run(os.Stdout, os.Args); err != nil {
 		fmt.Fprintf(os.Stderr, "viye: %v\n", err)
