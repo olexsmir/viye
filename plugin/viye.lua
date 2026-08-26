@@ -29,7 +29,9 @@ local function ancestors(cmd_lnum)
   local lnum = cmd_lnum
   while lnum do
     local l = vim.fn.getline(lnum)
-    table.insert(parts, 1, l:match("^%s*[+-] (.*)") or vim.trim(l))
+    local line = l:match("^%s*[+-] (.*)") or vim.trim(l)
+    local words = vim.split(line, "%s+")
+    for i = #words, 1, -1 do table.insert(parts, 1, words[i]) end
     lnum = parent_of(lnum)
   end
   return parts
@@ -88,9 +90,7 @@ local function exec()
   local first, last = children_of(cmd_lnum)
   local has_children = last ~= nil
   local on_cmd = cmd_lnum == lnum
-  if has_children and (on_cmd or line_type(line) == "data") then
-    if last then vim.cmd(string.format("%d,%ddelete _", first, last)) end
-    toggle_bullet(cmd_lnum)
+  if on_cmd and not has_children then
     return
   end
   local out = run(cmd_lnum)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 )
 
 const Version = "0.0.1-alpha"
@@ -13,12 +12,11 @@ const Version = "0.0.1-alpha"
 var ErrPlumbingNotFound = errors.New("tool not found")
 
 type Context struct {
-	Dir string // working directory
-
-	Cmd  string   // first word of the leaf path component
-	Args []string // remaining words of the leaf path component
+	Dir  string   // working directory
 	Path []string // ancestor chain [root, ..., target]
-	Body []string // body lines from : children (edited data for two-phase execution)
+	Cmd  string
+	Args []string
+	Body []string // body lines from : children
 
 	dispatch func(*Context) (string, error) // set by [Viye.dispatch] for tool chaining
 }
@@ -47,10 +45,15 @@ func (v *Viye) Run(out io.Writer, args []string) error {
 		return nil
 	}
 	if args[1] == "help" {
-		return v.showHelp(out)
+		fmt.Fprintln(out, "| Available tools:")
+		for _, tool := range v.tools {
+			fmt.Fprintf(out, "| %s\n", tool.Name())
+		}
+		return nil
 	}
 	if args[1] == "version" {
-		return v.showVersion(out)
+		fmt.Fprint(out, "| viye version: "+Version)
+		return nil
 	}
 
 	path, body := splitArgs(args[1:])
@@ -71,25 +74,12 @@ func (v *Viye) Run(out io.Writer, args []string) error {
 	return err
 }
 
-func (v *Viye) showHelp(out io.Writer) error {
-	fmt.Fprintln(out, "| Available tools:")
-	for _, tool := range v.tools {
-		fmt.Fprintf(out, "| %s\n", tool.Name())
-	}
-	return nil
-}
-
-func (v *Viye) showVersion(out io.Writer) error {
-	fmt.Fprint(out, "| viye version: "+Version)
-	return nil
-}
-
 // dispatch executes the path against registered tools, first-match-wins
 func (v *Viye) dispatch(ctx *Context) (string, error) {
 	if len(ctx.Path) == 0 {
 		return "", nil
 	}
-	ctx.Cmd, ctx.Args = splitLeaf(ctx.Path[len(ctx.Path)-1])
+	ctx.Cmd, ctx.Args = splitLeaf(ctx.Path)
 	ctx.dispatch = v.dispatch
 	for _, tool := range v.tools {
 		if tool.Match(ctx) {
@@ -99,15 +89,13 @@ func (v *Viye) dispatch(ctx *Context) (string, error) {
 	return "", ErrPlumbingNotFound
 }
 
-// splitLeaf splits a leaf path component into command name and args.
-// For "$ go run ." returns ("$", []string{"go", "run", "."}).
-// For "ip" returns ("ip", nil).
-func splitLeaf(leaf string) (cmd string, args []string) {
-	parts := strings.Fields(leaf)
-	if len(parts) == 0 {
+// splitLeaf splits a path into command name and args.
+// ["get", "http://site.com"] → ("get", ["http://site.com"]).
+func splitLeaf(path []string) (cmd string, args []string) {
+	if len(path) == 0 {
 		return "", nil
 	}
-	return parts[0], parts[1:]
+	return path[0], path[1:]
 }
 
 // splitArgs builds path and body from args.

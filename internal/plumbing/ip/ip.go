@@ -38,7 +38,7 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 	}
 
 	if lerr == nil && perr != nil {
-		_, _ = buf.WriteString(pip)
+		_, _ = buf.WriteString(lip)
 	}
 
 	_ = buf.WriteByte('\n')

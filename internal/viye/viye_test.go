@@ -36,16 +36,17 @@ func TestSplitArgs(t *testing.T) {
 
 func TestSplitLeaf(t *testing.T) {
 	for _, tt := range []struct {
-		leaf, cmd string
-		want      []string
+		path     []string
+		cmd      string
+		wantArgs []string
 	}{
-		{"mkdir dir", "mkdir", []string{"dir"}},
-		{"$ go run .", "$", []string{"go", "run", "."}},
-		{"ip", "ip", []string{}},
+		{[]string{"get", "http://site.com"}, "get", []string{"http://site.com"}},
+		{[]string{"$", "go", "run", "."}, "$", []string{"go", "run", "."}},
+		{[]string{"ip"}, "ip", []string{}},
 	} {
-		gotCmd, gotArgs := splitLeaf(tt.leaf)
+		gotCmd, gotArgs := splitLeaf(tt.path)
 		is.Equal(t, tt.cmd, gotCmd)
-		is.Equal(t, tt.want, gotArgs)
+		is.Equal(t, tt.wantArgs, gotArgs)
 	}
 }
 
@@ -59,4 +60,35 @@ func TestContext_ParseData(t *testing.T) {
 		got := ParseData(tt.inp)
 		is.Equal(t, tt.want, got)
 	}
+}
+
+func TestDispatch(t *testing.T) {
+	for _, tt := range []struct {
+		path     []string
+		wantCmd  string
+		wantArgs []string
+	}{
+		{[]string{"get", "http://site.com"}, "get", []string{"http://site.com"}},
+		{[]string{"ip"}, "ip", []string{}},
+		{[]string{"$", "go", "run", "."}, "$", []string{"go", "run", "."}},
+	} {
+		tool := &mockTool{cmd: tt.wantCmd}
+		v := &Viye{tools: []Tool{tool}}
+		ctx := &Context{Path: tt.path}
+		v.dispatch(ctx)
+		is.Equal(t, tt.wantCmd, ctx.Cmd)
+		is.Equal(t, tt.wantArgs, ctx.Args)
+	}
+}
+
+type mockTool struct {
+	name, cmd string
+	args      []string
+}
+
+func (m *mockTool) Name() string          { return m.name }
+func (m *mockTool) Match(c *Context) bool { return c.Cmd == m.cmd }
+func (m *mockTool) Execute(c *Context) (string, error) {
+	m.args = c.Args
+	return c.Cmd, nil
 }
