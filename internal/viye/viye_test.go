@@ -57,8 +57,20 @@ func TestContext_ParseData(t *testing.T) {
 		{[]string{"line1", "line2"}, []string{"line1", "line2"}},
 		{[]string{"| not data", "| again not data"}, []string{"| not data", "| again not data"}},
 	} {
-		got := ParseData(tt.inp)
-		is.Equal(t, tt.want, got)
+		is.Equal(t, tt.want, ParseData(tt.inp))
+	}
+}
+
+func TestExpandEnv(t *testing.T) {
+	t.Setenv("VIYE_TEST_ONE", "alpha")
+	for _, tt := range []struct{ in, want string }{
+		{"plain", "plain"},
+		{"$VIYE_TEST_ONE", "alpha"},
+		{"${VIYE_TEST_ONE}/x", "alpha/x"},
+		{"$VIYE_TEST_UNSET", ""},
+		{"$$", "$$"},
+	} {
+		is.Equal(t, tt.want, expandEnv(tt.in))
 	}
 }
 
@@ -71,6 +83,7 @@ func TestDispatch(t *testing.T) {
 		{[]string{"get", "http://site.com"}, "get", []string{"http://site.com"}},
 		{[]string{"ip"}, "ip", []string{}},
 		{[]string{"$", "go", "run", "."}, "$", []string{"go", "run", "."}},
+		{[]string{"$$", "sleep", "5"}, "$$", []string{"sleep", "5"}},
 	} {
 		tool := &mockTool{cmd: tt.wantCmd}
 		v := &Viye{tools: []Tool{tool}}

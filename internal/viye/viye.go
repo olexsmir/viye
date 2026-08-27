@@ -79,6 +79,9 @@ func (v *Viye) dispatch(ctx *Context) (string, error) {
 	if len(ctx.Path) == 0 {
 		return "", nil
 	}
+	for i := range ctx.Path {
+		ctx.Path[i] = expandEnv(ctx.Path[i])
+	}
 	ctx.Cmd, ctx.Args = splitLeaf(ctx.Path)
 	ctx.dispatch = v.dispatch
 	for _, tool := range v.tools {
@@ -87,6 +90,13 @@ func (v *Viye) dispatch(ctx *Context) (string, error) {
 		}
 	}
 	return "", ErrPlumbingNotFound
+}
+
+func expandEnv(s string) string {
+	if s == "$$" {
+		return s
+	}
+	return os.ExpandEnv(s)
 }
 
 // splitLeaf splits a path into command name and args.
