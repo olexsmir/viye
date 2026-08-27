@@ -21,23 +21,23 @@ func TestExecute(t *testing.T) {
 		"no body":          {want: ": name: your name\n: age: 0\n"},
 		"empty body slice": {want: ": name: your name\n: age: 0\n"},
 		"single key": {
-			body: []string{": name: olex"},
+			body: []string{"name: olex"},
 			want: `| {"name":"olex"}` + "\n",
 		},
 		"multiple keys": {
-			body: []string{": name: olex", ": age: 30"},
+			body: []string{"name: olex", "age: 30"},
 			want: `| {"age":"30","name":"olex"}` + "\n",
 		},
 		"values with spaces": {
-			body: []string{": title: hello world"},
+			body: []string{"title: hello world"},
 			want: `| {"title":"hello world"}` + "\n",
 		},
 		"keys with spaces": {
-			body: []string{": my key: value"},
+			body: []string{"my key: value"},
 			want: `| {"my key":"value"}` + "\n",
 		},
 		"line without colon separator": {
-			body: []string{": justtext"},
+			body: []string{"justtext"},
 			want: `| {}` + "\n",
 		},
 		"line without : prefix": {
@@ -45,23 +45,23 @@ func TestExecute(t *testing.T) {
 			want: `| {"name":"olex"}` + "\n",
 		},
 		"mixed valid and invalid": {
-			body: []string{": name: olex", "garbage", ": age: 30"},
+			body: []string{"name: olex", "garbage", "age: 30"},
 			want: `| {"age":"30","name":"olex"}` + "\n",
 		},
 		"empty key": {
-			body: []string{": : value"},
+			body: []string{": value"},
 			want: `| {}` + "\n",
 		},
 		"trailing whitespace in key": {
-			body: []string{": name  : olex"},
+			body: []string{"name  : olex"},
 			want: `| {"name":"olex"}` + "\n",
 		},
 		"trailing whitespace in value": {
-			body: []string{": name: olex  "},
+			body: []string{"name: olex  "},
 			want: `| {"name":"olex"}` + "\n",
 		},
 		"empty value": {
-			body: []string{": name: "},
+			body: []string{"name: "},
 			want: `| {"name":""}` + "\n",
 		},
 	}

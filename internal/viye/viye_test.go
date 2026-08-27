@@ -13,9 +13,10 @@ func TestSplitArgs(t *testing.T) {
 		{[]string{"./"}, []string{"./"}, nil},
 		{[]string{"././foo", "./bar"}, []string{"././foo", "./bar"}, nil},
 		{[]string{"demo"}, []string{"demo"}, nil},
-		{[]string{"demo", "--", ": name: olex"}, []string{"demo"}, []string{": name: olex"}},
-		{[]string{"demo", "--", ": name: olex", ": age: 30"}, []string{"demo"}, []string{": name: olex", ": age: 30"}},
-		{[]string{"--", ": body"}, nil, []string{": body"}},
+		{[]string{"demo", "--", ": name: olex"}, []string{"demo"}, []string{"name: olex"}},
+		{[]string{"demo", "--", ": name: olex", ": age: 30"}, []string{"demo"}, []string{"name: olex", "age: 30"}},
+		{[]string{"--", ": body"}, nil, []string{"body"}},
+		{[]string{"demo", "--", "raw body"}, []string{"demo"}, []string{"raw body"}},
 	}
 	for _, tt := range tests {
 		got, gotB := splitArgs(tt.args)
@@ -47,17 +48,6 @@ func TestSplitLeaf(t *testing.T) {
 		gotCmd, gotArgs := splitLeaf(tt.path)
 		is.Equal(t, tt.cmd, gotCmd)
 		is.Equal(t, tt.wantArgs, gotArgs)
-	}
-}
-
-func TestContext_ParseData(t *testing.T) {
-	for _, tt := range []struct{ inp, want []string }{
-		{[]string{": line1", ": line2"}, []string{"line1", "line2"}},
-		{[]string{": line1", "line2"}, []string{"line1", "line2"}},
-		{[]string{"line1", "line2"}, []string{"line1", "line2"}},
-		{[]string{"| not data", "| again not data"}, []string{"| not data", "| again not data"}},
-	} {
-		is.Equal(t, tt.want, ParseData(tt.inp))
 	}
 }
 

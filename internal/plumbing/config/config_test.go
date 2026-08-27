@@ -43,7 +43,7 @@ func TestExecute(t *testing.T) {
 
 		got, err := (Tool{}).Execute(&viye.Context{
 			Path: []string{"config"},
-			Body: []string{": name = olex"},
+			Body: []string{"name = olex"},
 		})
 		is.Err(t, err, nil)
 		is.Equal(t, ": name = olex\n\n", got)
@@ -58,7 +58,7 @@ func TestExecute(t *testing.T) {
 
 		got, err := (Tool{}).Execute(&viye.Context{
 			Path: []string{"config"},
-			Body: []string{": a = updated"},
+			Body: []string{"a = updated"},
 		})
 		is.Err(t, err, nil)
 		is.Equal(t, ": a = updated\n\n", got)
@@ -70,7 +70,7 @@ func TestExecute(t *testing.T) {
 
 		_, err := (Tool{}).Execute(&viye.Context{
 			Path: []string{"config"},
-			Body: []string{": my key = val"},
+			Body: []string{"my key = val"},
 		})
 		is.Err(t, err, `contains spaces`)
 	})

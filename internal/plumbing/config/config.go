@@ -21,7 +21,6 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 	if len(c.Body) > 0 {
 		seen := make(map[string]bool, len(c.Body))
 		for _, line := range c.Body {
-			line = strings.TrimPrefix(line, ": ")
 			key, val, ok := strings.Cut(line, " = ")
 			if !ok {
 				continue

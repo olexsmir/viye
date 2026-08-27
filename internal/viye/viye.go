@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -20,7 +21,7 @@ type Context struct {
 	Path []string // ancestor chain [root, ..., target]
 	Cmd  string
 	Args []string
-	Body []string // body lines from : children
+	Body []string // body lines, ": " prefix stripped
 
 	dispatch func(*Context) (string, error) // set by [Viye.dispatch] for tool chaining
 }
@@ -114,7 +115,7 @@ func splitLeaf(path []string) (cmd string, args []string) {
 
 // splitArgs builds path and body from args.
 // Everything before "--" is the path (each arg is one component).
-// Everything after "--" is the body (kept as-is, one element per line).
+// Everything after "--" is the body (one element per line, ": " prefix stripped).
 // If there's no "--", body is nil.
 func splitArgs(args []string) (path []string, body []string) {
 	sawSep := false
@@ -126,7 +127,7 @@ func splitArgs(args []string) (path []string, body []string) {
 		if !sawSep {
 			path = append(path, arg)
 		} else {
-			body = append(body, arg)
+			body = append(body, strings.TrimPrefix(arg, ": "))
 		}
 	}
 	return

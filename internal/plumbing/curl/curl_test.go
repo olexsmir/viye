@@ -33,7 +33,7 @@ func TestExecute(t *testing.T) {
 		got, err := (Tool{}).Execute(&viye.Context{
 			Cmd:  "curl",
 			Args: []string{"--version"},
-			Body: []string{": --help"},
+			Body: []string{"--help"},
 			Dir:  ".",
 		})
 		is.Err(t, err, nil)

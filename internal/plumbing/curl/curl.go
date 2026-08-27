@@ -18,7 +18,7 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 	defer cancel()
 
 	args := append([]string{"-sSL"}, c.Args...)
-	args = append(args, viye.ParseData(c.Body)...)
+	args = append(args, c.Body...)
 	cmd := exec.CommandContext(ctx, "curl", args...)
 	cmd.Dir = c.Dir
 

@@ -68,7 +68,7 @@ func TestExecute(t *testing.T) {
 		got, err := (Tool{}).Execute(&viye.Context{
 			Cmd:  "post",
 			Args: []string{server.URL},
-			Body: []string{": test body"},
+			Body: []string{"test body"},
 		})
 		is.Err(t, err, nil)
 		is.Equal(t, "| 201\tcreated\n", got)
@@ -84,7 +84,7 @@ func TestExecute(t *testing.T) {
 		_, err := (Tool{}).Execute(&viye.Context{
 			Cmd:  "get",
 			Args: []string{server.URL},
-			Body: []string{": Accept: application/json"},
+			Body: []string{"Accept: application/json"},
 		})
 		is.Err(t, err, nil)
 	})

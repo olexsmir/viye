@@ -28,7 +28,7 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 		return "", errors.New("please provide an url")
 	}
 
-	headers, body, err := parseBody(viye.ParseData(c.Body))
+	headers, body, err := parseBody(c.Body)
 	if err != nil {
 		return "", fmt.Errorf("body parsing error: %v", err)
 	}

@@ -20,7 +20,6 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 
 	m := make(map[string]string)
 	for _, line := range c.Body {
-		line = strings.TrimPrefix(line, ": ")
 		before, after, ok := strings.Cut(line, ":")
 		if !ok {
 			continue
