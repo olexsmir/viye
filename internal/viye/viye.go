@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 )
 
-const Version = "0.0.1-alpha"
+var ErrToolNotFound = errors.New("tool not found")
 
-var ErrPlumbingNotFound = errors.New("tool not found")
+const (
+	Version = "0.0.1-alpha"
+	Timeout = 5 * time.Second
+)
 
 type Context struct {
 	Dir  string   // working directory
@@ -89,7 +93,7 @@ func (v *Viye) dispatch(ctx *Context) (string, error) {
 			return tool.Execute(ctx)
 		}
 	}
-	return "", ErrPlumbingNotFound
+	return "", ErrToolNotFound
 }
 
 func expandEnv(s string) string {

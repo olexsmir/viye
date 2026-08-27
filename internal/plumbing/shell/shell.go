@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
-	"time"
 
 	"github.com/olexsmir/viye/internal/viye"
 )
@@ -24,7 +23,7 @@ func (Tool) Match(c *viye.Context) bool {
 func (Tool) Execute(c *viye.Context) (string, error) {
 	switch {
 	case isCmd(c):
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), viye.Timeout)
 		defer cancel()
 
 		cmd := exec.CommandContext(ctx, "sh", "-c", strings.Join(c.Args, " "))

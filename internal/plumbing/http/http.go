@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/olexsmir/viye/internal/viye"
 )
@@ -16,8 +15,6 @@ import (
 //	: Header: Value
 //	: Header2: value
 //	: {"json": "body"}
-
-const timeout = 5 * time.Second
 
 type Tool struct{}
 
@@ -36,7 +33,7 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 		return "", fmt.Errorf("body parsing error: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), viye.Timeout)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, cmdToMethod(c.Cmd), c.Args[0], strings.NewReader(body))
@@ -47,7 +44,7 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 		req.Header.Set(header, value)
 	}
 
-	resp, err := (&http.Client{Timeout: timeout}).Do(req)
+	resp, err := (&http.Client{Timeout: viye.Timeout}).Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to make a request: %v", err)
 	}
