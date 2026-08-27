@@ -47,7 +47,7 @@ func (v *Viye) Run(out io.Writer, args []string) error {
 	if args[1] == "help" {
 		fmt.Fprintln(out, "| Available tools:")
 		for _, tool := range v.tools {
-			fmt.Fprintf(out, "| %s\n", tool.Name())
+			fmt.Fprintf(out, "|   %s\n", tool.Name())
 		}
 		return nil
 	}
