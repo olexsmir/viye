@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 
 	"github.com/olexsmir/viye/internal/plumbing/config"
+	"github.com/olexsmir/viye/internal/plumbing/curl"
 	"github.com/olexsmir/viye/internal/plumbing/files"
 	"github.com/olexsmir/viye/internal/plumbing/gobin"
 	"github.com/olexsmir/viye/internal/plumbing/http"
@@ -32,6 +33,7 @@ func main() {
 	v.Register(&config.Tool{})
 	v.Register(&neofetch.Tool{})
 	v.Register(&makefile.Tool{})
+	v.Register(&curl.Tool{})
 
 	if err := v.Run(os.Stdout, os.Args); err != nil {
 		fmt.Fprintf(os.Stderr, "viye: %v\n", err)
