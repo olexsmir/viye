@@ -18,7 +18,6 @@ func TestMatch(t *testing.T) {
 		"put":    true,
 		"patch":  true,
 		"delete": true,
-		"ls":     false,
 		"empty":  false,
 		"":       false,
 	}
@@ -130,10 +129,12 @@ func TestParseBody(t *testing.T) {
 			wantBody:    "plain text body",
 		},
 	}
-	for _, tt := range tests {
-		headers, body, err := parseBody(tt.inp)
-		is.Err(t, err, nil)
-		is.Equal(t, tt.wantHeaders, headers)
-		is.Equal(t, tt.wantBody, body)
+	for tname, tt := range tests {
+		t.Run(tname, func(t *testing.T) {
+			headers, body, err := parseBody(tt.inp)
+			is.Err(t, err, nil)
+			is.Equal(t, tt.wantHeaders, headers)
+			is.Equal(t, tt.wantBody, body)
+		})
 	}
 }

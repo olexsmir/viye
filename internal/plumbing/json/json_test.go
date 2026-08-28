@@ -65,8 +65,8 @@ func TestExecute(t *testing.T) {
 			want: `| {"name":""}` + "\n",
 		},
 	}
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
+	for tname, tt := range tests {
+		t.Run(tname, func(t *testing.T) {
 			got, err := (Tool{}).Execute(&viye.Context{Cmd: "json", Body: tt.body})
 			is.Err(t, err, nil)
 			is.Equal(t, tt.want, got)

@@ -66,7 +66,7 @@ func TestExecute(t *testing.T) {
 
 func TestResolve(t *testing.T) {
 	home, _ := os.UserHomeDir()
-	tests := []struct{ p, dir, want string }{
+	tests := []struct{ path, dir, want string }{
 		{"~", ".", home},
 		{"~/foo", ".", filepath.Join(home, "foo")},
 		{"/abs/path", ".", "/abs/path"},
@@ -75,7 +75,7 @@ func TestResolve(t *testing.T) {
 		{"..", "/base/sub", "/base"},
 	}
 	for _, tt := range tests {
-		got := resolve(tt.p, tt.dir)
+		got := resolve(tt.path, tt.dir)
 		is.Equal(t, tt.want, got)
 	}
 }
