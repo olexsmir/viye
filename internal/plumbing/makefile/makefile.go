@@ -3,6 +3,7 @@ package makefile
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"os"
 	"os/exec"
@@ -13,8 +14,6 @@ import (
 	"github.com/olexsmir/viye/internal/viye"
 )
 
-var ErrMakefileNotFound = errors.New("makefile not found")
-
 type Tool struct{}
 
 func (Tool) Name() string               { return "make" }
@@ -22,7 +21,7 @@ func (Tool) Match(c *viye.Context) bool { return c.Cmd == "make" }
 func (Tool) Execute(c *viye.Context) (string, error) {
 	fpath, found := findMakefile(c)
 	if !found {
-		return "", ErrMakefileNotFound
+		return "", errors.New("makefile not found")
 	}
 
 	contents, err := os.ReadFile(fpath)
@@ -41,11 +40,18 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 
 	case 1: // run specified task
 		if !slices.Contains(tasks, c.Args[0]) {
-			return "", ErrTaskNotFound
+			return "", errors.New("task not found")
 		}
-		cmd := exec.Command("make", c.Args[0])
+
+		ctx, cancel := context.WithTimeout(context.Background(), viye.Timeout)
+		defer cancel()
+
+		cmd := exec.CommandContext(ctx, "make", c.Args[0])
 		cmd.Dir = c.Dir
 		out, err := cmd.Output()
+		if ctx.Err() == context.DeadlineExceeded {
+			return "", viye.ErrTimeout
+		}
 		if err != nil {
 			return "", err
 		}
@@ -55,8 +61,6 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 		return "", errors.New("invalid command, make usage: make [task]")
 	}
 }
-
-var ErrTaskNotFound = errors.New("task not found")
 
 func findMakefile(c *viye.Context) (name string, found bool) {
 	for _, mfile := range []string{"makefile", "Makefile", "GNUMakefile"} {

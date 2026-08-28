@@ -26,9 +26,8 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 		}
 
 		key := strings.TrimSpace(before)
-		val := strings.TrimSpace(after)
 		if key != "" {
-			m[key] = val
+			m[key] = strings.TrimSpace(after)
 		}
 	}
 

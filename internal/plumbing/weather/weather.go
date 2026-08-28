@@ -14,11 +14,6 @@ import (
 	"github.com/olexsmir/viye/internal/viye"
 )
 
-// | Berlin
-// | Today 🌧️ 12° / ☀️ 19° / 🌤️ 15°
-// | Sat   ☁️ 16° (avg)
-// | Sun   🌧️ 14° (avg)
-
 type Tool struct{}
 
 func (Tool) Name() string               { return "weather" }

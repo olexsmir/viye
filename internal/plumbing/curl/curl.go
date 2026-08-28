@@ -2,7 +2,6 @@ package curl
 
 import (
 	"context"
-	"fmt"
 	"os/exec"
 	"strings"
 
@@ -24,7 +23,7 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil && ctx.Err() == context.DeadlineExceeded {
-		return "", fmt.Errorf("timeout: command exceeded %s", viye.Timeout)
+		return "", viye.ErrTimeout
 	}
 
 	out := strings.ReplaceAll(string(output), "\r", "")

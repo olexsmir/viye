@@ -9,11 +9,14 @@ import (
 	"time"
 )
 
-var ErrToolNotFound = errors.New("tool not found")
-
 const (
 	Version = "0.0.1-alpha"
 	Timeout = 5 * time.Second
+)
+
+var (
+	ErrToolNotFound = errors.New("tool not found")
+	ErrTimeout      = fmt.Errorf("timeout: command exceeded %s", Timeout)
 )
 
 type Context struct {
@@ -79,7 +82,6 @@ func (v *Viye) Run(out io.Writer, args []string) error {
 	return err
 }
 
-// dispatch executes the path against registered tools, first-match-wins
 func (v *Viye) dispatch(ctx *Context) (string, error) {
 	if len(ctx.Path) == 0 {
 		return "", nil
@@ -113,10 +115,6 @@ func splitLeaf(path []string) (cmd string, args []string) {
 	return path[0], path[1:]
 }
 
-// splitArgs builds path and body from args.
-// Everything before "--" is the path (each arg is one component).
-// Everything after "--" is the body (one element per line, ": " prefix stripped).
-// If there's no "--", body is nil.
 func splitArgs(args []string) (path []string, body []string) {
 	sawSep := false
 	for _, arg := range args {

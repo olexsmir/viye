@@ -1,6 +1,7 @@
 package gobin
 
 import (
+	"context"
 	"os/exec"
 
 	"github.com/olexsmir/viye/internal/viye"
@@ -11,7 +12,7 @@ const menu = `- build
 - run
 - generate
 - doc
-- mod/
++ mod/
 `
 
 const modMenu = `- tidy
@@ -43,8 +44,14 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 }
 
 func runGo(dir, subcmd string, args ...string) (string, error) {
-	cmd := exec.Command("go", append([]string{subcmd}, args...)...)
+	ctx, cancel := context.WithTimeout(context.Background(), viye.Timeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "go", append([]string{subcmd}, args...)...)
 	cmd.Dir = dir
-	out, _ := cmd.CombinedOutput()
+	out, err := cmd.CombinedOutput()
+	if err != nil && ctx.Err() == context.DeadlineExceeded {
+		return "", viye.ErrTimeout
+	}
 	return viye.FormatOutput(out), nil
 }
