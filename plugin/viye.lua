@@ -63,7 +63,7 @@ local function body_of(cmd_lnum)
       local l = vim.fn.getline(i)
       local val = indent(l) == depth + 2 and l:match("^%s*: (.*)")
       if val then
-        for _, tok in ipairs(tokenize(val)) do table.insert(body, ": " .. tok) end
+        table.insert(body, ": " .. val)
       end
     end
   end
