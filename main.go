@@ -15,6 +15,7 @@ import (
 	"github.com/olexsmir/viye/internal/plumbing/makefile"
 	"github.com/olexsmir/viye/internal/plumbing/neofetch"
 	"github.com/olexsmir/viye/internal/plumbing/shell"
+	"github.com/olexsmir/viye/internal/plumbing/tldr"
 	"github.com/olexsmir/viye/internal/plumbing/url"
 	"github.com/olexsmir/viye/internal/plumbing/weather"
 	"github.com/olexsmir/viye/internal/viye"
@@ -35,6 +36,7 @@ func main() {
 	v.Register(&neofetch.Tool{})
 	v.Register(&makefile.Tool{})
 	v.Register(&curl.Tool{})
+	v.Register(&tldr.Tool{})
 	v.Register(&weather.Tool{})
 
 	if err := v.Run(os.Stdout, os.Args); err != nil {
