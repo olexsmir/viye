@@ -49,7 +49,7 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return viye.FormatOutput(string(out)), nil
+		return viye.FormatOutput(out), nil
 
 	default:
 		return "", errors.New("invalid command, make usage: make [task]")

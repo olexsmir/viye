@@ -2,34 +2,37 @@ package viye
 
 import "strings"
 
-func FormatOutputList(lines []string) string {
-	for i, line := range lines {
+func FormatOutput[T string | []string | []byte](s T) string {
+	if d := decorate(asString(s), "| ", "|"); d != "" {
+		return d + "\n"
+	}
+	return ""
+}
+
+func FormatBulletList[T string | []string | []byte](s T) string {
+	return decorate(asString(s), "- ", "")
+}
+
+func asString[T string | []string | []byte](s T) string {
+	switch v := any(s).(type) {
+	case string:
+		return strings.TrimSuffix(v, "\n")
+	case []string:
+		return strings.Join(v, "\n")
+	case []byte:
+		return strings.TrimSuffix(string(v), "\n")
+	}
+	panic("unreachable")
+}
+
+func decorate(s, prefix, blank string) string {
+	ls := strings.Split(s, "\n")
+	for i, line := range ls {
 		if line == "" {
-			lines[i] = "|"
+			ls[i] = blank
 		} else {
-			lines[i] = "| " + line
+			ls[i] = prefix + line
 		}
 	}
-	return strings.Join(lines, "\n") + "\n"
-}
-
-func FormatOutput(s string) string {
-	s = strings.TrimSuffix(s, "\n")
-	if s == "" {
-		return ""
-	}
-	return FormatOutputList(strings.Split(s, "\n"))
-}
-
-func FormatBulletListString(s string) string {
-	return FormatBulletList(strings.Split(s, "\n"))
-}
-
-func FormatBulletList(s []string) string {
-	for i, line := range s {
-		if line != "" {
-			s[i] = "- " + line
-		}
-	}
-	return strings.Join(s, "\n")
+	return strings.Join(ls, "\n")
 }

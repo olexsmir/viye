@@ -34,7 +34,7 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 				return "", fmt.Errorf("timeout: command exceeded 5s")
 			}
 		}
-		return viye.FormatOutput(string(out)), nil
+		return viye.FormatOutput(out), nil
 
 	case isBGCmd(c):
 		cmd := exec.Command("sh", "-c", strings.Join(c.Args, " "))
@@ -43,7 +43,8 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 		if err := cmd.Start(); err != nil {
 			return "", err
 		}
-		return fmt.Sprintf("| pid: %d", cmd.Process.Pid), nil
+		out := fmt.Sprintf("pid: %d", cmd.Process.Pid)
+		return viye.FormatOutput(out), nil
 
 	case isLs(c):
 		entries, err := os.ReadDir(c.Dir)
@@ -58,7 +59,7 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 			}
 			res = append(res, name)
 		}
-		return viye.FormatOutputList(res), nil
+		return viye.FormatOutput(res), nil
 
 	case isKill(c):
 		pid, err := strconv.Atoi(c.Args[0])

@@ -32,9 +32,9 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 		}
 	}
 
-	mashaled, err := json.Marshal(m)
+	marshaled, err := json.Marshal(m)
 	if err != nil {
 		return "", fmt.Errorf("demo: %w", err)
 	}
-	return fmt.Sprintf("| %s\n", string(mashaled)), nil
+	return viye.FormatOutput(marshaled), nil
 }

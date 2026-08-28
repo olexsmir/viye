@@ -34,7 +34,7 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 		return "", err
 	}
 
-	return viye.FormatOutputList(render(city, fc)), nil
+	return viye.FormatOutput(render(city, fc)), nil
 }
 
 func getCity(c *viye.Context) (string, error) {

@@ -58,8 +58,8 @@ func parseBody(inp []string) (headers map[string]string, body string, err error)
 	if len(inp) == 0 {
 		return nil, "", nil
 	}
-	headers = make(map[string]string)
 
+	headers = make(map[string]string)
 	for _, line := range inp {
 		key, val, ok := strings.Cut(line, ": ")
 		if ok {
