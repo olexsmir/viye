@@ -54,9 +54,9 @@ func render(city string, fc weatherResp) []string {
 		return []string{"no forecast data"}
 	}
 
-	lines := []string{city}
-
 	t := fc.Weather[0].Hourly
+	lines := []string{}
+	lines = append(lines, fmt.Sprintf("%s (%s)", city, fc.Weather[0].Date))
 	lines = append(lines, fmt.Sprintf("Today %s %s° / %s %s° / %s %s°",
 		emoji(t[2].Code), t[2].TempC, // morning
 		emoji(t[4].Code), t[4].TempC, // midday
