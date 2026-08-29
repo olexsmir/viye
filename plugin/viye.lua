@@ -78,8 +78,8 @@ local function insert_output(cmd_lnum, out)
 end
 
 local function toggle_bullet(cmd_lnum)
-  vim.fn.setline(cmd_lnum, (vim.fn.getline(cmd_lnum):gsub("^[+-] ", function(c)
-    return c == "+" and "-" or "+"
+  vim.fn.setline(cmd_lnum, (vim.fn.getline(cmd_lnum):gsub("^(%s*)([+-]) ", function(ws, c)
+    return ws .. (c == "+" and "-" or "+") .. " "
   end, 1)))
 end
 
