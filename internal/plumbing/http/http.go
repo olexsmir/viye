@@ -20,7 +20,11 @@ type Tool struct{}
 
 func (Tool) Name() string { return "http(get, post, put, patch, delete)" }
 func (Tool) Match(c *viye.Context) bool {
-	return (c.Cmd == "get" || c.Cmd == "post" || c.Cmd == "put" || c.Cmd == "patch" || c.Cmd == "delete")
+	switch c.Cmd {
+	case "get", "post", "put", "patch", "delete":
+		return len(c.Args) > 0 && isURL(c.Args[0])
+	}
+	return false
 }
 
 func (Tool) Execute(c *viye.Context) (string, error) {

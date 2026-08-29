@@ -14,6 +14,7 @@ import (
 	"github.com/olexsmir/viye/internal/plumbing/makefile"
 	"github.com/olexsmir/viye/internal/plumbing/neofetch"
 	"github.com/olexsmir/viye/internal/plumbing/shell"
+	"github.com/olexsmir/viye/internal/plumbing/sql"
 	"github.com/olexsmir/viye/internal/plumbing/tldr"
 	"github.com/olexsmir/viye/internal/plumbing/url"
 	"github.com/olexsmir/viye/internal/plumbing/weather"
@@ -26,6 +27,7 @@ func main() {
 	v.Register(&shell.Tool{})
 	v.Register(&http.Tool{})
 	v.Register(&url.Tool{})
+	v.Register(&sql.Tool{})
 	v.Register(&ip.Tool{})
 	v.Register(&gobin.Tool{})
 	v.Register(&json.Tool{})

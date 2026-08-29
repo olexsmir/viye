@@ -19,7 +19,8 @@ func TestLoad(t *testing.T) {
 		cfg, err := Load()
 		is.Err(t, err, nil)
 		for key, val := range want.cfg {
-			is.Equal(t, val, cfg.Get(key))
+			v, _ := cfg.Get(key)
+			is.Equal(t, val, v)
 		}
 	})
 
@@ -32,7 +33,10 @@ func TestLoad(t *testing.T) {
 
 		cfg, err := Load()
 		is.Err(t, err, nil)
-		is.Equal(t, "value", cfg.Get("custom"))
+
+		val, ok := cfg.Get("custom")
+		is.Equal(t, "value", val)
+		is.Equal(t, true, ok)
 	})
 
 	t.Run("invalid config file returns error", func(t *testing.T) {

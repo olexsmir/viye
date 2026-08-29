@@ -33,17 +33,15 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 }
 
 func getCity(c *viye.Context) (string, error) {
-	var city string
 	if len(c.Args) == 1 {
-		city = c.Args[0]
-	} else {
-		cfg, err := config.Load()
-		if err != nil {
-			return "", err
-		}
-		city = cfg.Get("city")
+		return c.Args[0], nil
 	}
-	if city == "" {
+	cfg, err := config.Load()
+	if err != nil {
+		return "", err
+	}
+	city, ok := cfg.Get("city")
+	if !ok {
 		return "", errors.New("please provide a city option")
 	}
 	return city, nil

@@ -12,18 +12,25 @@ import (
 )
 
 func TestMatch(t *testing.T) {
-	tests := map[string]bool{
-		"get":    true,
-		"post":   true,
-		"put":    true,
-		"patch":  true,
-		"delete": true,
-		"empty":  false,
-		"":       false,
-	}
-	for tinp, twant := range tests {
-		got := (Tool{}).Match(&viye.Context{Cmd: tinp})
-		is.Equal(t, twant, got)
+	for _, tt := range []struct {
+		cmd  string
+		args []string
+		want bool
+	}{
+		{"", nil, false},
+		{"get", []string{"http://example.com"}, true},
+		{"post", []string{"https://x.io"}, true},
+		{"put", []string{"http://x.io/a"}, true},
+		{"patch", []string{"https://x.io/a"}, true},
+		{"delete", []string{"http://example.com"}, true},
+		{"GET", []string{"http://example.com"}, false}, // case-sensitive
+		{"get", nil, false},
+		{"post", []string{"not-a-url"}, false},
+		{"delete", nil, false},
+		{"empty", nil, false},
+	} {
+		got := (Tool{}).Match(&viye.Context{Cmd: tt.cmd, Args: tt.args})
+		is.Equal(t, tt.want, got)
 	}
 }
 

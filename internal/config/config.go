@@ -63,7 +63,11 @@ func Load() (*Config, error) {
 }
 
 func (c *Config) GetAll() map[string]string { return c.cfg }
-func (c *Config) Get(key string) string     { return c.cfg[key] }
+func (c *Config) Get(key string) (val string, ok bool) {
+	val, ok = c.cfg[key]
+	return val, ok
+}
+
 func (c *Config) Set(key, value string) error {
 	c.cfg[key] = value
 	return c.save()
