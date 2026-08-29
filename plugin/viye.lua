@@ -130,9 +130,12 @@ vim.api.nvim_create_autocmd("BufEnter", {
   pattern = "*",
   group = group,
   callback = function()
-    if vim.api.nvim_buf_get_name(0) == "" then
-      vim.bo.filetype = "viye"
-    end
+    -- defer so term:// buffers have their terminal buftype set before deciding
+    vim.schedule(function()
+      if vim.api.nvim_buf_get_name(0) == "" and vim.bo.buftype ~= "terminal" and vim.bo.filetype == "" then
+        vim.bo.filetype = "viye"
+      end
+    end)
   end,
 })
 vim.api.nvim_create_autocmd("FileType", {
