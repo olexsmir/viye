@@ -88,7 +88,7 @@ local function run(cmd_lnum)
   if #cmd == 0 then return end
   local body = body_of(cmd_lnum)
   if #body > 0 then vim.list_extend(vim.list_extend(cmd, { "--" }), body) end
-  vim.system({ "viye", unpack(cmd) }, { text = true }, function(res)
+  vim.system({ "viye", unpack(cmd) }, { text = true, env = { GOGC = "off" } }, function(res)
     vim.schedule(function()
       if res.code ~= 0 then
         vim.notify(vim.trim(res.stderr), vim.log.levels.ERROR)

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"runtime/debug"
 
 	"github.com/olexsmir/viye/internal/plumbing/config"
 	"github.com/olexsmir/viye/internal/plumbing/curl"
@@ -22,8 +21,6 @@ import (
 )
 
 func main() {
-	debug.SetGCPercent(-1)
-
 	v := viye.New()
 	v.Register(&files.Tool{})
 	v.Register(&shell.Tool{})
