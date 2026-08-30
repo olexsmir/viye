@@ -7,7 +7,7 @@ import (
 	"github.com/olexsmir/viye/internal/plumbing/config"
 	"github.com/olexsmir/viye/internal/plumbing/curl"
 	"github.com/olexsmir/viye/internal/plumbing/files"
-	"github.com/olexsmir/viye/internal/plumbing/gobin"
+	"github.com/olexsmir/viye/internal/plumbing/gocli"
 	"github.com/olexsmir/viye/internal/plumbing/http"
 	"github.com/olexsmir/viye/internal/plumbing/ip"
 	"github.com/olexsmir/viye/internal/plumbing/json"
@@ -29,7 +29,7 @@ func main() {
 	v.Register(&url.Tool{})
 	v.Register(&sql.Tool{})
 	v.Register(&ip.Tool{})
-	v.Register(&gobin.Tool{})
+	v.Register(&gocli.Tool{})
 	v.Register(&json.Tool{})
 	v.Register(&config.Tool{})
 	v.Register(&neofetch.Tool{})

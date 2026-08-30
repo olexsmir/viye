@@ -1,4 +1,4 @@
-package gobin
+package gocli
 
 import (
 	"testing"

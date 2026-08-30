@@ -50,11 +50,11 @@ func (Tool) Execute(c *viye.Context) (string, error) {
 			maxLen = len(key)
 		}
 	}
+
 	var buf strings.Builder
 	for key, val := range conf {
 		fmt.Fprintf(&buf, ": %-*s = %s\n", maxLen, key, val)
 	}
-
 	buf.WriteByte('\n')
 	return buf.String(), nil
 }

@@ -100,7 +100,7 @@ func (v *Viye) dispatch(ctx *Context) (string, error) {
 }
 
 func expandEnv(s string) string {
-	if s == "$$" {
+	if s == "$$" || s == "$" {
 		return s
 	}
 	return os.ExpandEnv(s)
