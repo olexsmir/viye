@@ -16,10 +16,10 @@ import (
 
 type Tool struct{}
 
-func (Tool) Name() string { return "sql(select, insert, update, delete)" }
+func (Tool) Name() string { return "sql(select, insert, update, delete, etc...)" }
 func (Tool) Match(c *viye.Context) bool {
 	switch strings.ToLower(c.Cmd) {
-	case "select", "explain":
+	case "select", "explain", "pragma":
 		return len(c.Args) >= 1
 	case "insert":
 		return len(c.Args) >= 2 && strings.EqualFold(c.Args[0], "into")
@@ -29,8 +29,6 @@ func (Tool) Match(c *viye.Context) bool {
 		return len(c.Args) >= 2 && strings.EqualFold(c.Args[0], "from")
 	case "create", "drop", "alter":
 		return len(c.Args) >= 2
-	case "pragma":
-		return len(c.Args) >= 1
 	case "analyze":
 		return true
 	}

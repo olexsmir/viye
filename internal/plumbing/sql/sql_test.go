@@ -1,7 +1,6 @@
 package sql
 
 import (
-	"context"
 	"database/sql"
 	"strings"
 	"testing"
@@ -10,7 +9,7 @@ import (
 	"olexsmir.xyz/x/is"
 )
 
-func TestMatchSQL(t *testing.T) {
+func TestMatch(t *testing.T) {
 	for tname, tt := range map[string]struct {
 		cmd  string
 		args []string
@@ -44,7 +43,6 @@ func TestMatchSQL(t *testing.T) {
 
 func TestRunQuery_select(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
 	_, err := db.Exec("insert into users values (1, 'alice', 30), (2, 'bob', NULL)")
 	is.Err(t, err, nil)
 
@@ -56,7 +54,7 @@ func TestRunQuery_select(t *testing.T) {
 		"select * from users order by id",
 		"SELECT * FROM users ORDER BY id",
 	} {
-		out, err := runQuery(ctx, db, query)
+		out, err := runQuery(t.Context(), db, query)
 		is.Err(t, err, nil)
 		is.Equal(t, want, out)
 	}
@@ -64,32 +62,19 @@ func TestRunQuery_select(t *testing.T) {
 
 func TestRunQuery_truncation(t *testing.T) {
 	db := newTestDB(t)
-	_, err := db.Exec("with recursive c(x) as (select 1 union all select x+1 from c where x < 105) insert into users select x, 'u'||x, x from c")
+	_, err := db.ExecContext(t.Context(), "with recursive c(x) as (select 1 union all select x+1 from c where x < 105) insert into users select x, 'u'||x, x from c")
 	is.Err(t, err, nil)
 
-	out, err := runQuery(context.Background(), db, "select * from users")
+	out, err := runQuery(t.Context(), db, "select * from users")
 	is.Err(t, err, nil)
 	if !strings.Contains(out, "... 100+ more row(s), output truncated at 100 rows") {
 		t.Errorf("output not truncated:\n%s", out)
 	}
 }
 
-func TestWithLimit(t *testing.T) {
-	for _, tt := range []struct{ in, want string }{
-		{"select * from users;", "select * from users limit 101"},
-		{"select * from users limit 10", "select * from users limit 10"},
-		{"select * from users limit 10 offset 5", "select * from users limit 10 offset 5"},
-		{"pragma table_info(users)", "pragma table_info(users)"},
-		{"update users set age = 1", "update users set age = 1"},
-	} {
-		is.Equal(t, tt.want, withLimit(tt.in))
-	}
-}
-
 func TestRunQuery_write(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
-	_, err := db.Exec("insert into users values (1, 'alice', 30)")
+	_, err := db.ExecContext(t.Context(), "insert into users values (1, 'alice', 30)")
 	is.Err(t, err, nil)
 
 	for _, tt := range []struct{ query, want string }{
@@ -97,7 +82,7 @@ func TestRunQuery_write(t *testing.T) {
 		{"insert into users values (3, 'carol', 40)", "| 1 row(s) affected"},
 		{"delete from users where id = 3", "| 1 row(s) affected"},
 	} {
-		out, err := runQuery(ctx, db, tt.query)
+		out, err := runQuery(t.Context(), db, tt.query)
 		is.Err(t, err, nil)
 		is.Equal(t, tt.want, out)
 	}
@@ -105,20 +90,20 @@ func TestRunQuery_write(t *testing.T) {
 
 func TestUpdateFromBody(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
-	_, err := db.Exec("insert into users values (1, 'alice', 30)")
+	_, err := db.ExecContext(t.Context(), "insert into users values (1, 'alice', 30)")
 	is.Err(t, err, nil)
 
-	out, err := updateFromBody(ctx, db, "sqlite", "update users",
+	out, err := updateFromBody(t.Context(), db, "sqlite", "update users",
 		[]string{"id name age", "1 alice 31", "3 carol 40", "garbage"})
 	is.Err(t, err, nil)
 	is.Equal(t, "| 1 updated, 1 inserted, 1 skipped (bad column count)", out)
 
 	var count, aliceAge int
-	err = db.QueryRow("select count(*) from users").Scan(&count)
+	err = db.QueryRowContext(t.Context(), "select count(*) from users").Scan(&count)
 	is.Err(t, err, nil)
 	is.Equal(t, 2, count)
-	err = db.QueryRow("select age from users where id = 1").Scan(&aliceAge)
+
+	err = db.QueryRowContext(t.Context(), "select age from users where id = 1").Scan(&aliceAge)
 	is.Err(t, err, nil)
 	is.Equal(t, 31, aliceAge)
 }
@@ -166,14 +151,25 @@ func TestPlaceholder(t *testing.T) {
 	}
 }
 
+func TestWithLimit(t *testing.T) {
+	for _, tt := range []struct{ in, want string }{
+		{"select * from users;", "select * from users limit 101"},
+		{"select * from users limit 10", "select * from users limit 10"},
+		{"select * from users limit 10 offset 5", "select * from users limit 10 offset 5"},
+		{"pragma table_info(users)", "pragma table_info(users)"},
+		{"update users set age = 1", "update users set age = 1"},
+	} {
+		is.Equal(t, tt.want, withLimit(tt.in))
+	}
+}
+
 func newTestDB(t *testing.T) *sql.DB {
 	t.Helper()
 	db, err := sql.Open("sqlite", ":memory:")
 	is.Err(t, err, nil)
-	// Single connection keeps the in-memory database shared across queries.
-	db.SetMaxOpenConns(1)
+	db.SetMaxOpenConns(1) // keep connection shared across queries.
 	t.Cleanup(func() { db.Close() })
-	_, err = db.Exec("create table users (id integer primary key, name text, age integer)")
+	_, err = db.ExecContext(t.Context(), "create table users (id integer primary key, name text, age integer)")
 	is.Err(t, err, nil)
 	return db
 }
